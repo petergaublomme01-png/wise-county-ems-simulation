@@ -243,10 +243,10 @@
         <div class="legend-item"><span class="legend-dot red"></span>Over 12 min</div>
         <div class="legend-item"><span style="font-size:16px;line-height:1;margin-right:4px">&#x1F691;</span> Ambulance</div>
         <div class="legend-item"><div class="legend-hosp-icon">H</div> Hospital</div>
-        <div class="legend-section-label" style="margin-top:6px">Coverage rings (speed est.)</div>
-        <div class="legend-item"><div class="legend-ring green-ring"></div> ~8 min range</div>
-        <div class="legend-item"><div class="legend-ring amber-ring"></div> ~12 min range</div>
-        <p class="legend-note">Rings assume ~65 mph avg; actual terrain slower</p>
+        <div class="legend-section-label" style="margin-top:6px">Coverage rings (distance)</div>
+        <div class="legend-item"><div class="legend-ring green-ring"></div> 5 mi radius</div>
+        <div class="legend-item"><div class="legend-ring amber-ring"></div> 10 mi radius</div>
+        <p class="legend-note">Rings show straight-line distance from each staging station.</p>
         <div class="legend-reset">
           <button class="legend-reset-btn" id="map-reset-btn">Reset view</button>
         </div>
@@ -417,21 +417,21 @@ var MAP_ZOOM   = 11;
 
 // ─── INCIDENT LOCATIONS (Change 1 — 15 entries across Wise County) ────────────
 var INCIDENT_LOCATIONS = [
-  { lat: 36.9759, lng: -82.5757, name: 'Wise Town Center',       type: 'medical'  },
-  { lat: 36.9334, lng: -82.6290, name: 'Norton Downtown',         type: 'medical'  },
-  { lat: 36.8586, lng: -82.7832, name: 'Big Stone Gap',           type: 'medical'  },
-  { lat: 36.9550, lng: -82.6020, name: 'US-23 North Corridor',    type: 'accident' },
-  { lat: 36.8960, lng: -82.7060, name: 'Powell River Corridor',   type: 'accident' },
-  { lat: 36.9200, lng: -82.6500, name: 'Route 58 Bypass',         type: 'accident' },
-  { lat: 36.9450, lng: -82.5500, name: 'Appalachian School Rd',   type: 'fire'     },
-  { lat: 36.8800, lng: -82.6800, name: 'Prichard Hollow Rd',      type: 'medical'  },
-  { lat: 37.0950, lng: -82.6100, name: 'Pound Area',              type: 'medical'  },
-  { lat: 36.9000, lng: -82.7800, name: 'Appalachia Downtown',     type: 'accident' },
-  { lat: 36.9330, lng: -82.4600, name: 'Coeburn Main St',         type: 'medical'  },
-  { lat: 36.8400, lng: -82.7400, name: 'Guest River Gorge',       type: 'accident' },
-  { lat: 36.9100, lng: -82.5600, name: 'Lonesome Pine Airport',   type: 'accident' },
-  { lat: 36.9950, lng: -82.6800, name: 'Tacoma Area',             type: 'fire'     },
-  { lat: 36.8200, lng: -82.8200, name: 'Fort Blackmore Rd',       type: 'fire'     }
+  { lat: 36.9759, lng: -82.5757, type: 'medical',  label: 'Residential area \u2014 Wise' },
+  { lat: 36.9720, lng: -82.5800, type: 'accident', label: 'US-23 \u2014 Wise town center' },
+  { lat: 36.9780, lng: -82.5720, type: 'fire',     label: 'Commercial district \u2014 Wise' },
+  { lat: 36.9334, lng: -82.6290, type: 'medical',  label: 'Residential area \u2014 Norton' },
+  { lat: 36.9300, lng: -82.6330, type: 'fire',     label: 'Commercial district \u2014 Norton' },
+  { lat: 36.9370, lng: -82.6200, type: 'accident', label: 'US-23 \u2014 Norton corridor' },
+  { lat: 36.9280, lng: -82.6350, type: 'medical',  label: 'Neighborhood \u2014 Norton south' },
+  { lat: 36.8586, lng: -82.7832, type: 'medical',  label: 'Residential area \u2014 Big Stone Gap' },
+  { lat: 36.8620, lng: -82.7870, type: 'fire',     label: 'Industrial area \u2014 Big Stone Gap' },
+  { lat: 36.8550, lng: -82.7790, type: 'accident', label: 'US-23 \u2014 BSG corridor' },
+  { lat: 36.8650, lng: -82.7750, type: 'medical',  label: 'Neighborhood \u2014 BSG north' },
+  { lat: 36.9550, lng: -82.6020, type: 'accident', label: 'US-23 \u2014 Wise-Norton corridor' },
+  { lat: 36.9480, lng: -82.6100, type: 'medical',  label: 'Rural route \u2014 Wise-Norton' },
+  { lat: 36.8960, lng: -82.7060, type: 'accident', label: 'US-58 ALT \u2014 Norton-BSG corridor' },
+  { lat: 36.8880, lng: -82.7200, type: 'medical',  label: 'Rural route \u2014 Norton-BSG' }
 ];
 
 // ─── APP STATE ─────────────────────────────────────────────────────────────────
@@ -879,19 +879,19 @@ function updateAmbMarkers(stagingConfig) {
     APP.coverageRings.push(ring8, ring12);
 
     // Change 3: ring labels
-    var label8 = L.marker([coords[0] + 0.0765, coords[1]], {
+    var label8 = L.marker([coords[0] + 0.0725, coords[1]], {
       icon: L.divIcon({
-        html: '<div class="ring-label green-label">~8 min (est.)</div>',
+        html: '<div class="ring-label green-label">5 mi</div>',
         className: '',
-        iconAnchor: [30, 8]
+        iconAnchor: [20, 8]
       }),
       interactive: false
     });
-    var label12 = L.marker([coords[0] + 0.1148, coords[1]], {
+    var label12 = L.marker([coords[0] + 0.1450, coords[1]], {
       icon: L.divIcon({
-        html: '<div class="ring-label amber-label">~12 min (est.)</div>',
+        html: '<div class="ring-label amber-label">10 mi</div>',
         className: '',
-        iconAnchor: [34, 8]
+        iconAnchor: [22, 8]
       }),
       interactive: false
     });
@@ -903,8 +903,8 @@ function updateAmbMarkers(stagingConfig) {
     (function(r8, r12) {
       var start = null;
       var duration = 1000;
-      var target8  = 8500;
-      var target12 = 12800;
+      var target8  = 8047;   // 5 miles in meters
+      var target12 = 16093;  // 10 miles in meters
       function step(ts) {
         if (!start) start = ts;
         var progress = Math.min((ts - start) / duration, 1);
@@ -1099,8 +1099,8 @@ function simulateIncidentResponse() {
 
   // Pick incident with jitter
   var loc    = INCIDENT_LOCATIONS[Math.floor(Math.random() * INCIDENT_LOCATIONS.length)];
-  var incLat = loc.lat + (Math.random() - 0.5) * 0.004;
-  var incLng = loc.lng + (Math.random() - 0.5) * 0.004;
+  var incLat = loc.lat + (Math.random() - 0.5) * 0.002;
+  var incLng = loc.lng + (Math.random() - 0.5) * 0.002;
   var incLatLng = L.latLng(incLat, incLng);
 
   var INCIDENT_ICONS  = { medical: '\uD83E\uDE7A', accident: '\uD83D\uDE97', fire: '\uD83D\uDD25' };
@@ -1247,7 +1247,7 @@ function simulateIncidentResponse() {
     var popupHtml =
       '<div class="incident-popup">' +
       '<strong>' + incidentIcon + ' Incident resolved</strong><br>' +
-      '<span class="popup-location">' + loc.name + '</span><br>' +
+      '<span class="popup-location">' + loc.label + '</span><br>' +
       '<span class="popup-time">\u23F1 Response time: <strong>' +
         responseMinutes.toFixed(1) + ' min</strong></span><br>' +
       '<span class="popup-unit">Unit: A' + (nearestIdx + 1) +

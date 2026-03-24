@@ -311,7 +311,7 @@
       <tbody>
         <tr><td>Annual calls</td><td>8,938</td><td>VCCS CAD export 2024</td></tr>
         <tr><td>Calls per day (&#955;)</td><td>24.5</td><td>8,938 &#247; 365</td></tr>
-        <tr><td>Average busy time per call</td><td>92.8 min</td><td>ACS response-to-clear records 2025</td></tr>
+        <tr><td>Avg busy time per call (rural)</td><td>92.8 minutes (dispatch through hospital offload)</td><td>American College of Surgeons, 2025</td></tr>
         <tr><td>Average service rate (&#956;)</td><td>15.5 calls/unit/day</td><td>1440 &#247; 92.8</td></tr>
       </tbody>
     </table>
@@ -495,9 +495,11 @@ where I[&#183;] is 1 if the indicator condition holds, 0 otherwise.</div>
     <ul>
       <li>Reduces worst-case response time from 23 min (Wise zone, baseline) to 11 min.</li>
       <li>Increases 8-min population coverage from 65% to 87.4% under normal conditions.</li>
-      <li>Unit utilization of &#961; = 0.524 leaves adequate spare capacity for simultaneous calls.</li>
+      <li>Unit utilization of &#961; = 0.524 (approximately 52% of time units are busy), leaving adequate spare capacity for simultaneous calls.</li>
       <li>Remains FEASIBLE under rain and peak-hour conditions; becomes MARGINAL only under snow.</li>
     </ul>
+
+    <p>With 24.5 calls per day and 92.8 minutes of average busy time per call (covering dispatch, on-scene time, transport, and hospital offload &mdash; American College of Surgeons, 2025), a 4-unit fleet operates at approximately 47% utilization during morning peak hours, meaning roughly 2 of 4 units are free at any given time. This 52% availability figure is consistent with national rural EMS benchmarks and does not indicate a capacity problem &mdash; it reflects the reality that rural calls take nearly twice as long as urban calls due to longer transport distances to Norton Community Hospital and Lonesome Pine Hospital. The practical implication is that geographic coverage and unit availability are separate constraints: a well-positioned 3-unit fleet achieves both simultaneously under normal conditions.</p>
 
     <p><strong>Overnight (23:00&#8211;07:00):</strong> Revert to Norton + BSG only. Call volume drops 15%; worst-case RT for the Wise zone rises to 11 min (within the 12-min constraint). The 8-min coverage falls to 74%, which is MARGINAL but operationally justified given cost and staffing constraints at night.</p>
 
