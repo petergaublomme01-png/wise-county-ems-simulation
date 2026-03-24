@@ -6,10 +6,32 @@
   <title>Wise County EMS Deployment Simulation</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* ─── Page Tab Navigation ─── */
+    .page-tabs {
+      position: sticky; top: 0; z-index: 1000;
+      display: flex;
+      background: #1e293b; border-bottom: 2px solid #0ea5e9;
+      padding: 0 16px;
+    }
+    .page-tab {
+      display: inline-block; padding: 10px 20px;
+      font-size: 13px; font-weight: 600; color: #94a3b8;
+      text-decoration: none; border-bottom: 3px solid transparent;
+      margin-bottom: -2px; transition: color 0.2s;
+    }
+    .page-tab:hover { color: #e2e8f0; }
+    .page-tab.active { color: #0ea5e9; border-bottom-color: #0ea5e9; }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
+
+<nav class="page-tabs">
+  <a href="index.html"          class="page-tab active">Simulation</a>
+  <a href="recommendation.html" class="page-tab">Recommendation</a>
+</nav>
 
 <div class="app-layout">
 
@@ -221,45 +243,6 @@
       </div>
     </div>
 
-    <!-- AI Panel (Change 2 — above map, hidden until health check passes) -->
-    <div id="ai-panel" style="display:none">
-      <div class="ai-panel-card">
-        <div class="ai-panel-header">
-          <span class="ai-panel-title">AI Analysis</span>
-          <span class="ai-panel-badge">Claude Sonnet</span>
-        </div>
-        <p class="ai-panel-subtitle">Ask Claude to interpret results, find weaknesses, generate a report paragraph, or suggest optimizations. Runs automatically after each simulation.</p>
-        <div class="ai-mode-buttons">
-          <button class="ai-mode-btn active" data-mode="interpret">
-            <span class="ai-btn-icon">&#128202;</span>
-            <span class="ai-btn-label">Interpret</span>
-            <span class="ai-btn-desc">Explain what these results mean</span>
-          </button>
-          <button class="ai-mode-btn" data-mode="critique">
-            <span class="ai-btn-icon">&#128269;</span>
-            <span class="ai-btn-label">Find Weaknesses</span>
-            <span class="ai-btn-desc">Identify coverage gaps and risks</span>
-          </button>
-          <button class="ai-mode-btn" data-mode="report_paragraph">
-            <span class="ai-btn-icon">&#128221;</span>
-            <span class="ai-btn-label">Report Paragraph</span>
-            <span class="ai-btn-desc">Write a competition-ready paragraph</span>
-          </button>
-          <button class="ai-mode-btn" data-mode="optimize">
-            <span class="ai-btn-icon">&#128640;</span>
-            <span class="ai-btn-label">Optimize</span>
-            <span class="ai-btn-desc">Suggest staging improvements</span>
-          </button>
-        </div>
-        <div class="ai-response-area" id="ai-response-area">
-          <div class="ai-placeholder">
-            <span class="ai-placeholder-icon">&#128161;</span>
-            <span>Select an analysis mode above &mdash; results appear here automatically after each simulation run.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Response Time Breakdown Table -->
     <div class="results-section response-table-section">
       <div class="panel-heading">Response Time Breakdown</div>
@@ -299,6 +282,45 @@
       </div>
       <div class="optimal-staging-card" id="optimal-staging-card">
         <!-- Populated by inline script -->
+      </div>
+    </div>
+
+    <!-- AI Analysis Panel (last — after all result sections) -->
+    <div id="ai-panel" style="display:none">
+      <div class="ai-panel-card">
+        <div class="ai-panel-header">
+          <span class="ai-panel-title">AI Analysis</span>
+          <span class="ai-panel-badge">Claude Sonnet</span>
+        </div>
+        <p class="ai-panel-subtitle">Ask Claude to interpret results, find weaknesses, generate a report paragraph, or suggest optimizations. Runs automatically after each simulation.</p>
+        <div class="ai-mode-buttons">
+          <button class="ai-mode-btn active" data-mode="interpret">
+            <span class="ai-btn-icon">&#128202;</span>
+            <span class="ai-btn-label">Interpret</span>
+            <span class="ai-btn-desc">Explain what these results mean</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="critique">
+            <span class="ai-btn-icon">&#128269;</span>
+            <span class="ai-btn-label">Find Weaknesses</span>
+            <span class="ai-btn-desc">Identify coverage gaps and risks</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="report_paragraph">
+            <span class="ai-btn-icon">&#128221;</span>
+            <span class="ai-btn-label">Report Paragraph</span>
+            <span class="ai-btn-desc">Write a competition-ready paragraph</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="optimize">
+            <span class="ai-btn-icon">&#128640;</span>
+            <span class="ai-btn-label">Optimize</span>
+            <span class="ai-btn-desc">Suggest staging improvements</span>
+          </button>
+        </div>
+        <div class="ai-response-area" id="ai-response-area">
+          <div class="ai-placeholder">
+            <span class="ai-placeholder-icon">&#128161;</span>
+            <span>Select an analysis mode above &mdash; results appear here automatically after each simulation run.</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1004,6 +1026,17 @@ function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
   }
 }
 
+// ─── FIND NEAREST ZONE (helper for response time fallback) ────────────────────
+function findNearestZone(latLng) {
+  var minDist = Infinity, nearest = null;
+  Object.keys(ZONE_COORDS).forEach(function(zoneId) {
+    var zc = ZONE_COORDS[zoneId];
+    var d  = L.latLng(zc[0], zc[1]).distanceTo(latLng);
+    if (d < minDist) { minDist = d; nearest = zoneId; }
+  });
+  return nearest;
+}
+
 // ─── SIMULATE INCIDENT RESPONSE (Change 1) ────────────────────────────────────
 function simulateIncidentResponse() {
   if (!APP.leafletOk) return;
@@ -1030,8 +1063,6 @@ function simulateIncidentResponse() {
   var INCIDENT_LABELS = { medical: 'Medical Emergency', accident: 'Vehicle Accident', fire: 'Structure Fire' };
   var incidentIcon    = INCIDENT_ICONS[loc.type]  || '\uD83E\uDE7A';
   var incidentLabel   = INCIDENT_LABELS[loc.type] || 'Medical Emergency';
-  // responseMinutes: fallback from distance; overridden by ORS in doAnimate
-  var responseMinutes = nearestDist / 1000 / 65 * 60;
 
   // Place incident marker (icon only — no text label, 48px circle)
   var incIcon = L.divIcon({
@@ -1070,13 +1101,18 @@ function simulateIncidentResponse() {
   var ambLat = ambCoords.lat;
   var ambLng = ambCoords.lng;
 
+  // Initial fallback: 35 km/h × 1.4 tortuosity for mountain roads (nearestDist is meters)
+  var straightKm = nearestDist / 1000;
+  var roadKm = straightKm * 1.4;
+  var responseMinutes = (roadKm / 35) * 60 + 2;
+
   // Button state
   simulateResponseBtn.textContent = '\uD83D\uDEA8 Responding...';
   simulateResponseBtn.disabled    = true;
   simulateResponseBtn.classList.add('btn-responding');
 
-  // Animation duration based on distance (65 km/h estimate)
-  var animDuration = Math.min(Math.max((nearestDist / 1000 / 65 * 60) * 400, 1500), 8000);
+  // Animation duration based on initial responseMinutes estimate
+  var animDuration = Math.min(Math.max(responseMinutes * 400, 1500), 8000);
 
   function doAnimate(routeResult) {
     var pathLatLngs;
@@ -1088,7 +1124,24 @@ function simulateIncidentResponse() {
         responseMinutes = routeResult.durationMinutes; // use real ORS travel time
       }
     } else {
-      pathLatLngs = [L.latLng(ambLat, ambLng), incLatLng];
+      // Matrix fallback: zone-to-zone travel times (SW Virginia mountain roads)
+      var TRAVEL_TIMES = {
+        wise:                { wise:0,  norton:9,  bsg:21, wise_norton_corridor:4,  norton_bsg_corridor:15 },
+        norton:              { wise:9,  norton:0,  bsg:14, wise_norton_corridor:5,  norton_bsg_corridor:8  },
+        bsg:                 { wise:21, norton:14, bsg:0,  wise_norton_corridor:17, norton_bsg_corridor:5  },
+        wise_norton_corridor:{ wise:4,  norton:5,  bsg:17, wise_norton_corridor:0,  norton_bsg_corridor:12 },
+        norton_bsg_corridor: { wise:15, norton:8,  bsg:5,  wise_norton_corridor:12, norton_bsg_corridor:0  }
+      };
+      try {
+        var ambZone = findNearestZone(L.latLng(ambLat, ambLng));
+        var incZone = findNearestZone(incLatLng);
+        if (ambZone && incZone && TRAVEL_TIMES[ambZone] && TRAVEL_TIMES[ambZone][incZone] !== undefined) {
+          responseMinutes = TRAVEL_TIMES[ambZone][incZone] + 2; // +2 min dispatch overhead
+        }
+        // else: keep distance-fallback value already set in outer scope
+      } catch(e) { /* keep distance fallback */ }
+      animDuration = Math.min(Math.max(responseMinutes * 400, 1500), 8000);
+      pathLatLngs  = [L.latLng(ambLat, ambLng), incLatLng];
     }
 
     // Red dashed route polyline
