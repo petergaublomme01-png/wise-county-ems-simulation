@@ -14,7 +14,7 @@
 <div class="app-layout">
 
   <!-- ═══════════════════════════════════════════════════════
-       SIDEBAR
+       SIDEBAR (white/light — Change 0; no AI section)
   ═══════════════════════════════════════════════════════ -->
   <aside class="sidebar">
 
@@ -98,10 +98,10 @@
       <div class="control-row">
         <label class="control-label" for="time-period-select">Time period</label>
         <select id="time-period-select">
-          <option value="morning">Morning 6am–12pm</option>
-          <option value="afternoon">Afternoon 12pm–6pm</option>
-          <option value="evening">Evening 6pm–10pm</option>
-          <option value="overnight">Overnight 10pm–6am</option>
+          <option value="morning">Morning 6am&ndash;12pm</option>
+          <option value="afternoon">Afternoon 12pm&ndash;6pm</option>
+          <option value="evening">Evening 6pm&ndash;10pm</option>
+          <option value="overnight">Overnight 10pm&ndash;6am</option>
         </select>
       </div>
 
@@ -119,9 +119,9 @@
       <div class="control-row">
         <label class="control-label" for="call-volume-select">Call volume</label>
         <select id="call-volume-select">
-          <option value="15">Low — 15 per day</option>
-          <option value="24.5" selected>Average — 24.5 per day</option>
-          <option value="35">High surge — 35 per day</option>
+          <option value="15">Low &mdash; 15 per day</option>
+          <option value="24.5" selected>Average &mdash; 24.5 per day</option>
+          <option value="35">High surge &mdash; 35 per day</option>
         </select>
       </div>
 
@@ -151,19 +151,6 @@
       </div>
     </div>
 
-    <!-- Section 4: AI Analysis (hidden until health check passes) -->
-    <div class="sidebar-section" id="ai-panel" style="display:none">
-      <p class="section-label">AI Analysis &mdash; Claude Sonnet</p>
-      <div class="ai-mode-row">
-        <button class="ai-mode-btn active" data-mode="interpret">Interpret</button>
-        <button class="ai-mode-btn" data-mode="critique">Find Weaknesses</button>
-        <button class="ai-mode-btn" data-mode="report_paragraph">Report Para</button>
-        <button class="ai-mode-btn" data-mode="optimize">Optimize</button>
-      </div>
-      <button class="btn btn-secondary" id="ai-analyze-btn">Analyze with Claude</button>
-      <div id="ai-result" class="ai-result-box" style="display:none"></div>
-    </div>
-
   </aside>
 
   <!-- ═══════════════════════════════════════════════════════
@@ -171,71 +158,106 @@
   ═══════════════════════════════════════════════════════ -->
   <main class="main-content">
 
-    <!-- Map -->
-    <div id="map-container">
-      <div id="ems-leaflet-map"></div>
-
-      <!-- SVG fallback — shown only if Leaflet init fails -->
-      <div id="svg-fallback" style="display:none">
-        <p class="fallback-notice">Interactive map unavailable — showing schematic view</p>
-        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
-
-      <!-- Map legend overlay -->
-      <div id="map-legend">
-        <div class="legend-title">Legend</div>
-        <div class="legend-row"><div class="legend-dot green"></div> Under 8 min</div>
-        <div class="legend-row"><div class="legend-dot amber"></div> 8–12 min</div>
-        <div class="legend-row"><div class="legend-dot red"></div> Over 12 min</div>
-        <div class="legend-row"><div class="legend-amb">+</div> Ambulance</div>
-        <div class="legend-row"><div class="legend-hosp">H</div> Hospital</div>
-        <div class="legend-reset">
-          <button class="btn-map-reset" id="map-reset-btn">Reset view</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Metric Cards -->
     <div class="metric-row">
       <div class="metric-card" id="card-cov8">
-        <span class="metric-value" id="val-cov8">—</span>
+        <span class="metric-value" id="val-cov8">&mdash;</span>
         <span class="metric-unit">%</span>
         <span class="metric-title">Coverage &le;8 min</span>
         <span class="metric-explanation" id="expl-cov8">&nbsp;</span>
       </div>
       <div class="metric-card" id="card-cov12">
-        <span class="metric-value" id="val-cov12">—</span>
+        <span class="metric-value" id="val-cov12">&mdash;</span>
         <span class="metric-unit">%</span>
         <span class="metric-title">Coverage &le;12 min</span>
         <span class="metric-explanation" id="expl-cov12">&nbsp;</span>
       </div>
       <div class="metric-card" id="card-avgrt">
-        <span class="metric-value" id="val-avgrt">—</span>
+        <span class="metric-value" id="val-avgrt">&mdash;</span>
         <span class="metric-unit">min avg</span>
         <span class="metric-title">Avg Response Time</span>
         <span class="metric-explanation" id="expl-avgrt">Population-weighted average</span>
       </div>
       <div class="metric-card" id="card-wrstrt">
-        <span class="metric-value" id="val-wrstrt">—</span>
+        <span class="metric-value" id="val-wrstrt">&mdash;</span>
         <span class="metric-unit">min worst</span>
         <span class="metric-title">Worst-case RT</span>
         <span class="metric-explanation" id="expl-wrstrt">&nbsp;</span>
       </div>
       <div class="metric-card" id="card-avail">
-        <span class="metric-value" id="val-avail">—</span>
+        <span class="metric-value" id="val-avail">&mdash;</span>
         <span class="metric-unit">% avail</span>
         <span class="metric-title">Unit Availability</span>
         <span class="metric-explanation" id="expl-avail">&nbsp;</span>
       </div>
     </div>
 
-    <!-- AI Panel (main content area) -->
-    <div class="results-section" id="ai-panel-card" style="display:none">
-      <div class="panel-heading">
-        <span class="ai-heading-label">AI ANALYSIS</span>
-        <span class="ai-model-badge">Claude Sonnet</span>
+    <!-- AI Panel (Change 2 — above map, hidden until health check passes) -->
+    <div id="ai-panel" style="display:none">
+      <div class="ai-panel-card">
+        <div class="ai-panel-header">
+          <span class="ai-panel-title">AI Analysis</span>
+          <span class="ai-panel-badge">Claude Sonnet</span>
+        </div>
+        <p class="ai-panel-subtitle">Ask Claude to interpret results, find weaknesses, generate a report paragraph, or suggest optimizations. Runs automatically after each simulation.</p>
+        <div class="ai-mode-buttons">
+          <button class="ai-mode-btn active" data-mode="interpret">
+            <span class="ai-btn-icon">&#128202;</span>
+            <span class="ai-btn-label">Interpret</span>
+            <span class="ai-btn-desc">Explain what these results mean</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="critique">
+            <span class="ai-btn-icon">&#128269;</span>
+            <span class="ai-btn-label">Find Weaknesses</span>
+            <span class="ai-btn-desc">Identify coverage gaps and risks</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="report_paragraph">
+            <span class="ai-btn-icon">&#128221;</span>
+            <span class="ai-btn-label">Report Para</span>
+            <span class="ai-btn-desc">Write a competition-ready paragraph</span>
+          </button>
+          <button class="ai-mode-btn" data-mode="optimize">
+            <span class="ai-btn-icon">&#128640;</span>
+            <span class="ai-btn-label">Optimize</span>
+            <span class="ai-btn-desc">Suggest staging improvements</span>
+          </button>
+        </div>
+        <div class="ai-response-area" id="ai-response-area">
+          <div class="ai-placeholder">
+            <span class="ai-placeholder-icon">&#128161;</span>
+            <span>Select an analysis mode above &mdash; results appear here automatically after each simulation run.</span>
+          </div>
+        </div>
       </div>
-      <div class="ai-panel-body" id="ai-panel-main-body" style="display:none"></div>
+    </div>
+
+    <!-- Map (Change 3 — legend updated with two sections) -->
+    <div id="map-container">
+      <div id="ems-leaflet-map"></div>
+
+      <!-- SVG fallback — shown only if Leaflet init fails -->
+      <div id="svg-fallback" style="display:none">
+        <p class="fallback-notice">Interactive map unavailable &mdash; showing schematic view</p>
+        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- Map legend overlay -->
+      <div id="map-legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-section-label">Zone colors (model results)</div>
+        <div class="legend-item"><div class="legend-dot green"></div> Under 8 min</div>
+        <div class="legend-item"><div class="legend-dot amber"></div> 8&ndash;12 min</div>
+        <div class="legend-item"><div class="legend-dot red"></div> Over 12 min</div>
+        <div class="legend-item"><div class="legend-amb-icon">+</div> Ambulance</div>
+        <div class="legend-item"><div class="legend-hosp-icon">H</div> Hospital</div>
+        <div class="legend-section-label" style="margin-top:6px">Coverage rings (speed est.)</div>
+        <div class="legend-item"><div class="legend-ring green-ring"></div> ~8 min range</div>
+        <div class="legend-item"><div class="legend-ring amber-ring"></div> ~12 min range</div>
+        <p class="legend-note">Rings assume ~65 mph avg; actual terrain slower</p>
+        <div class="legend-reset">
+          <button class="legend-reset-btn" id="map-reset-btn">Reset view</button>
+        </div>
+      </div>
     </div>
 
     <!-- Response Time Breakdown Table -->
@@ -269,11 +291,43 @@
       <div class="sensitivity-interpretation" id="sensitivity-interpretation"></div>
     </div>
 
-    <!-- Optimal Staging Recommendation -->
+    <!-- Optimal Staging Recommendation (Change 4 — info button added) -->
     <div class="results-section">
-      <div class="panel-heading">Optimal Staging Recommendation</div>
+      <div class="section-heading-row">
+        <span class="panel-heading" style="margin:0">Optimal Staging Recommendation</span>
+        <button class="info-btn" onclick="openOptimalModal()">How is this calculated?</button>
+      </div>
       <div class="optimal-staging-card" id="optimal-staging-card">
         <!-- Populated by inline script -->
+      </div>
+    </div>
+
+    <!-- Optimal Staging Info Modal (Change 4) -->
+    <div id="optimal-info-overlay" class="modal-overlay" onclick="if(event.target===this)closeOptimalModal()">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span>How Optimal Staging Works</span>
+          <button class="modal-close-btn" onclick="closeOptimalModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">The optimizer evaluates every possible way to assign ambulances to staging sites and picks the configuration that best serves Wise County.</p>
+          <div class="modal-step">
+            <div class="modal-step-number">1</div>
+            <div class="modal-step-content"><strong>Generate combinations</strong> &mdash; tries all combinations with replacement from 6 staging sites for your fleet size. Multiple ambulances can share a station.</div>
+          </div>
+          <div class="modal-step">
+            <div class="modal-step-number">2</div>
+            <div class="modal-step-content"><strong>Score each configuration</strong> &mdash; runs the coverage model for each combination, measuring population-weighted 8-min coverage and worst-case response time across all 5 zones.</div>
+          </div>
+          <div class="modal-step">
+            <div class="modal-step-number">3</div>
+            <div class="modal-step-content"><strong>Select the best</strong> &mdash; picks the configuration that satisfies the 12-minute constraint while maximizing 8-minute population coverage.</div>
+          </div>
+          <div class="modal-stats" id="modal-combo-stats">
+            <!-- Populated by openOptimalModal() -->
+          </div>
+          <p class="modal-footnote">Run times are near-instant &mdash; the coverage model is O(zones &times; ambulances) per configuration.</p>
+        </div>
       </div>
     </div>
 
@@ -324,22 +378,45 @@ var HOSPITAL_COORDS = {
 var MAP_CENTER = [36.9100, -82.6800];
 var MAP_ZOOM   = 11;
 
+// ─── INCIDENT LOCATIONS (Change 1 — 15 entries across Wise County) ────────────
+var INCIDENT_LOCATIONS = [
+  { lat: 36.9759, lng: -82.5757, name: 'Wise Town Center',       type: 'medical'  },
+  { lat: 36.9334, lng: -82.6290, name: 'Norton Downtown',         type: 'medical'  },
+  { lat: 36.8586, lng: -82.7832, name: 'Big Stone Gap',           type: 'medical'  },
+  { lat: 36.9550, lng: -82.6020, name: 'US-23 North Corridor',    type: 'accident' },
+  { lat: 36.8960, lng: -82.7060, name: 'Powell River Corridor',   type: 'accident' },
+  { lat: 36.9200, lng: -82.6500, name: 'Route 58 Bypass',         type: 'accident' },
+  { lat: 36.9450, lng: -82.5500, name: 'Appalachian School Rd',   type: 'fire'     },
+  { lat: 36.8800, lng: -82.6800, name: 'Prichard Hollow Rd',      type: 'medical'  },
+  { lat: 37.0950, lng: -82.6100, name: 'Pound Area',              type: 'medical'  },
+  { lat: 36.9000, lng: -82.7800, name: 'Appalachia Downtown',     type: 'accident' },
+  { lat: 36.9330, lng: -82.4600, name: 'Coeburn Main St',         type: 'medical'  },
+  { lat: 36.8400, lng: -82.7400, name: 'Guest River Gorge',       type: 'accident' },
+  { lat: 36.9100, lng: -82.5600, name: 'Lonesome Pine Airport',   type: 'accident' },
+  { lat: 36.9950, lng: -82.6800, name: 'Tacoma Area',             type: 'fire'     },
+  { lat: 36.8200, lng: -82.8200, name: 'Fort Blackmore Rd',       type: 'fire'     }
+];
+
 // ─── APP STATE ─────────────────────────────────────────────────────────────────
 var APP = {
-  map:            null,
-  ambMarkers:     [],
-  coverageRings:  [],
-  zoneCircles:    {},
-  animPolyline:   null,
-  animMarker:     null,
-  animFrameId:    null,
-  leafletOk:      true,
-  sensitivityChart: null,
-  lastMetrics:    null,
-  lastParams:     null,
-  _optimalResult: null,
-  _aiMode:        'interpret',
-  _firstRun:      true
+  map:                   null,
+  ambMarkers:            [],
+  ambSiteIds:            [],
+  coverageRings:         [],
+  zoneCircles:           {},
+  animPolyline:          null,
+  animMarker:            null,
+  animFrameId:           null,
+  incidentMarker:        null,
+  incidentPolyline:      null,
+  shockwaveCircle:       null,
+  incidentCleanupTimeout: null,
+  leafletOk:             true,
+  sensitivityChart:      null,
+  lastMetrics:           null,
+  lastParams:            null,
+  _optimalResult:        null,
+  _aiMode:               'interpret'
 };
 
 // ─── DOM REFS ──────────────────────────────────────────────────────────────────
@@ -442,31 +519,26 @@ function renderMetricCards(metrics, availability) {
   var worstRT  = metrics.worstCaseResponseTime;
   var availPct = availability * 100;
 
-  // Count zones under 8 min
   var under8count = metrics.zoneResults.filter(function(zr) { return zr.minResponseTime <= 8; }).length;
 
-  // Find worst zone
   var worstZone = metrics.zoneResults.reduce(function(prev, curr) {
     return curr.minResponseTime > prev.minResponseTime ? curr : prev;
   }, metrics.zoneResults[0]);
 
-  // Update cards with status class
   cardCov8.className   = 'metric-card ' + colorClass(cov8Pct, 80, 60, false);
   cardCov12.className  = 'metric-card ' + colorClass(cov12Pct, 95, 80, false);
   cardAvgRT.className  = 'metric-card ' + colorClass(avgRT, 8, 12, true);
   cardWrstRT.className = 'metric-card ' + colorClass(worstRT, 8, 12, true);
   cardAvail.className  = 'metric-card ' + colorClass(availPct, 80, 60, false);
 
-  // Animate count-up
   animateCount(valCov8,   cov8Pct,  600);
   animateCount(valCov12,  cov12Pct, 600);
   animateCount(valAvgRT,  avgRT,    600);
   animateCount(valWrstRT, worstRT,  600);
   animateCount(valAvail,  availPct, 600);
 
-  // Update explanations
   explCov8.textContent  = under8count + ' of 5 zones reached in under 8 minutes';
-  explCov12.textContent = 'Constraint ' + (worstRT <= 12 ? 'SATISFIED' : 'VIOLATED') + ' — worst ' + worstRT.toFixed(1) + ' min';
+  explCov12.textContent = 'Constraint ' + (worstRT <= 12 ? 'SATISFIED' : 'VIOLATED') + ' \u2014 worst ' + worstRT.toFixed(1) + ' min';
   explWrstRT.textContent = worstZone ? ('Slowest: ' + worstZone.label + ' at ' + worstZone.minResponseTime.toFixed(1) + ' min') : '';
   explAvail.textContent  = '~' + Math.round(availPct) + '% chance a unit is free';
 }
@@ -481,7 +553,7 @@ function renderResponseTable(metrics) {
     var status   = rt <= 8 ? 'PASS' : (rt <= 12 ? 'WARNING' : 'FAIL');
     var pillCls  = rt <= 8 ? 'pass'  : (rt <= 12 ? 'warning' : 'fail');
     var rowCls   = rt <= 8 ? 'row-green' : (rt <= 12 ? 'row-amber' : 'row-red');
-    var station  = zr.nearestStageSiteId ? data.STAGING_SITES[zr.nearestStageSiteId].label : '—';
+    var station  = zr.nearestStageSiteId ? data.STAGING_SITES[zr.nearestStageSiteId].label : '\u2014';
     rows +=
       '<tr class="' + rowCls + '" data-zone="' + zr.zoneId + '">' +
         '<td><strong>' + zr.label + '</strong></td>' +
@@ -493,7 +565,6 @@ function renderResponseTable(metrics) {
   });
   responseTableBody.innerHTML = rows;
 
-  // Wire row click → response animation
   responseTableBody.querySelectorAll('tr').forEach(function(tr) {
     tr.addEventListener('click', function() {
       responseTableBody.querySelectorAll('tr').forEach(function(r) { r.classList.remove('row-selected'); });
@@ -552,7 +623,6 @@ function renderOptimalStaging(params) {
       '</p>' +
       '<button class="btn-apply" id="apply-optimal-btn">Apply this configuration</button>';
 
-    // Wire the Apply button
     document.getElementById('apply-optimal-btn').addEventListener('click', function() {
       if (!APP._optimalResult) return;
       var selects = [amb1Select, amb2Select, amb3Select, amb4Select];
@@ -600,7 +670,7 @@ function renderSVGMap(metrics, stagingConfig, params) {
       var perp = (angle + 90) * Math.PI / 180;
       var lx = mx + 12 * Math.cos(perp);
       var ly = my + 12 * Math.sin(perp);
-      parts.push('<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">' + edge.road + ' · ' + edge.minutes + ' min</text>');
+      parts.push('<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">' + edge.road + ' \xb7 ' + edge.minutes + ' min</text>');
     });
 
     var rtByZone = {};
@@ -703,7 +773,7 @@ function snapToNearestStation(latLng) {
   return nearest;
 }
 
-// ─── LEAFLET: UPDATE AMBULANCE MARKERS ────────────────────────────────────────
+// ─── LEAFLET: UPDATE AMBULANCE MARKERS (Change 1: ambSiteIds; Change 3: ring labels) ─
 function updateAmbMarkers(stagingConfig) {
   if (!APP.leafletOk) return;
 
@@ -711,6 +781,7 @@ function updateAmbMarkers(stagingConfig) {
   APP.ambMarkers.forEach(function(m) { m.remove(); });
   APP.coverageRings.forEach(function(r) { r.remove(); });
   APP.ambMarkers   = [];
+  APP.ambSiteIds   = [];
   APP.coverageRings = [];
 
   var data    = window.EMS.data;
@@ -745,12 +816,34 @@ function updateAmbMarkers(stagingConfig) {
     })(marker, selects[idx]);
 
     APP.ambMarkers.push(marker);
+    APP.ambSiteIds.push(siteId);
 
     // Coverage rings (start at radius 0, animate to target)
     var ring8  = L.circle(coords, { radius: 1, color: '#16a34a', weight: 1.5, dashArray: '6 4', fill: true, fillColor: '#16a34a', fillOpacity: 0.04, opacity: 0.7 }).addTo(APP.map);
     var ring12 = L.circle(coords, { radius: 1, color: '#d97706', weight: 1.5, dashArray: '6 4', fill: true, fillColor: '#d97706', fillOpacity: 0.03, opacity: 0.6 }).addTo(APP.map);
 
     APP.coverageRings.push(ring8, ring12);
+
+    // Change 3: ring labels
+    var label8 = L.marker([coords[0] + 0.0765, coords[1]], {
+      icon: L.divIcon({
+        html: '<div class="ring-label green-label">~8 min (est.)</div>',
+        className: '',
+        iconAnchor: [30, 8]
+      }),
+      interactive: false
+    });
+    var label12 = L.marker([coords[0] + 0.1148, coords[1]], {
+      icon: L.divIcon({
+        html: '<div class="ring-label amber-label">~12 min (est.)</div>',
+        className: '',
+        iconAnchor: [34, 8]
+      }),
+      interactive: false
+    });
+    label8.addTo(APP.map);
+    label12.addTo(APP.map);
+    APP.coverageRings.push(label8, label12);
 
     // Animate ring expand
     (function(r8, r12) {
@@ -775,7 +868,6 @@ function updateAmbMarkers(stagingConfig) {
 function updateZoneCircles(metrics) {
   if (!APP.leafletOk) return;
 
-  // Remove old zone circles
   Object.keys(APP.zoneCircles).forEach(function(zid) {
     APP.zoneCircles[zid].remove();
   });
@@ -813,14 +905,12 @@ function updateZoneCircles(metrics) {
       (rt !== null ? ('<br><strong>' + rt.toFixed(1) + ' min</strong>') : '');
     circle.bindTooltip(ttText, { direction: 'top', sticky: true });
 
-    // Click → trigger animation
     (function(zid) {
       circle.on('click', function() {
         if (APP.lastMetrics) triggerZoneAnimation(zid, APP.lastMetrics);
       });
     })(zoneId);
 
-    // Hover highlight
     circle.on('mouseover', function() { circle.setStyle({ fillOpacity: 0.50 }); });
     circle.on('mouseout',  function() { circle.setStyle({ fillOpacity: 0.30 }); });
 
@@ -828,7 +918,7 @@ function updateZoneCircles(metrics) {
   });
 }
 
-// ─── RESPONSE ANIMATION ───────────────────────────────────────────────────────
+// ─── RESPONSE ANIMATION (zone-based — triggered by table row / zone click) ────
 function triggerZoneAnimation(zoneId, metrics) {
   var zr = null;
   for (var i = 0; i < metrics.zoneResults.length; i++) {
@@ -847,19 +937,15 @@ function triggerZoneAnimation(zoneId, metrics) {
 function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
   if (!APP.leafletOk) return;
 
-  // Cancel any running animation
   if (APP.animFrameId) { cancelAnimationFrame(APP.animFrameId); APP.animFrameId = null; }
   if (APP.animPolyline) { APP.animPolyline.remove(); APP.animPolyline = null; }
   if (APP.animMarker)   { APP.animMarker.remove();   APP.animMarker   = null; }
 
-  // Try to get ORS route; fall back to straight line
   function doAnimate(pathLatLngs) {
-    // Draw polyline
     APP.animPolyline = L.polyline(pathLatLngs, {
       color: '#0ea5e9', weight: 3, dashArray: '8 5', opacity: 0.85
     }).addTo(APP.map);
 
-    // Create moving dot
     var dotIcon = L.divIcon({
       html: '<div style="width:12px;height:12px;background:#0ea5e9;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3)"></div>',
       className: '',
@@ -868,36 +954,28 @@ function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
     });
     APP.animMarker = L.marker(pathLatLngs[0], { icon: dotIcon, zIndexOffset: 2000 }).addTo(APP.map);
 
-    // Build cumulative distance array for uniform speed
     var totalDist = 0;
     var cumDists = [0];
     for (var i = 1; i < pathLatLngs.length; i++) {
-      var a = L.latLng(pathLatLngs[i - 1]);
-      var b = L.latLng(pathLatLngs[i]);
-      totalDist += a.distanceTo(b);
+      totalDist += L.latLng(pathLatLngs[i-1]).distanceTo(L.latLng(pathLatLngs[i]));
       cumDists.push(totalDist);
     }
 
     var startTs = null;
     function step(ts) {
       if (!startTs) startTs = ts;
-      var elapsed  = ts - startTs;
-      var progress = Math.min(elapsed / durationMs, 1);
+      var progress = Math.min((ts - startTs) / durationMs, 1);
       var targetDist = totalDist * progress;
 
-      // Find segment containing targetDist
-      var pos = pathLatLngs[pathLatLngs.length - 1]; // default: end
+      var pos = pathLatLngs[pathLatLngs.length - 1];
       for (var j = 0; j < cumDists.length - 1; j++) {
         if (targetDist >= cumDists[j] && targetDist <= cumDists[j + 1]) {
-          var segFrac = (cumDists[j + 1] - cumDists[j]) > 0
-            ? (targetDist - cumDists[j]) / (cumDists[j + 1] - cumDists[j])
+          var segFrac = (cumDists[j+1] - cumDists[j]) > 0
+            ? (targetDist - cumDists[j]) / (cumDists[j+1] - cumDists[j])
             : 0;
           var la = pathLatLngs[j];
           var lb = pathLatLngs[j + 1];
-          pos = L.latLng(
-            la.lat + (lb.lat - la.lat) * segFrac,
-            la.lng + (lb.lng - la.lng) * segFrac
-          );
+          pos = L.latLng(la.lat + (lb.lat - la.lat) * segFrac, la.lng + (lb.lng - la.lng) * segFrac);
           break;
         }
       }
@@ -908,7 +986,6 @@ function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
         APP.animFrameId = requestAnimationFrame(step);
       } else {
         APP.animFrameId = null;
-        // Show popup at destination
         if (APP.animMarker) APP.animMarker.setLatLng(pathLatLngs[pathLatLngs.length - 1]);
         L.popup({ offset: [0, -6] })
           .setLatLng(pathLatLngs[pathLatLngs.length - 1])
@@ -916,20 +993,16 @@ function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
           .openOn(APP.map);
       }
     }
-
     APP.animFrameId = requestAnimationFrame(step);
   }
 
-  // Convert array coords [lat,lng] to L.latLng objects
   function toLatLngs(coords) {
     return coords.map(function(c) { return L.latLng(c[0], c[1]); });
   }
 
-  // Try ORS route
-  if (window.EMS && window.EMS.api && window.EMS.api.getRoute) {
+  if (window.EMS && window.EMS.api && typeof window.EMS.api.getRoute === 'function') {
     window.EMS.api.getRoute(fromCoords[0], fromCoords[1], toCoords[0], toCoords[1]).then(function(result) {
       if (result && result.coordinates && result.coordinates.length > 1) {
-        // ORS returns [lng, lat] — swap to [lat, lng] for Leaflet
         var latLngs = result.coordinates.map(function(c) { return L.latLng(c[1], c[0]); });
         doAnimate(latLngs);
       } else {
@@ -943,13 +1016,198 @@ function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
   }
 }
 
-// ─── AI PANEL ─────────────────────────────────────────────────────────────────
+// ─── SIMULATE INCIDENT RESPONSE (Change 1) ────────────────────────────────────
+function simulateIncidentResponse() {
+  if (!APP.leafletOk) return;
+
+  // Cancel previous incident animation and any pending cleanup
+  if (APP.incidentCleanupTimeout) {
+    clearTimeout(APP.incidentCleanupTimeout);
+    APP.incidentCleanupTimeout = null;
+  }
+  if (APP.animFrameId)      { cancelAnimationFrame(APP.animFrameId); APP.animFrameId = null; }
+  if (APP.animPolyline)     { APP.animPolyline.remove();     APP.animPolyline     = null; }
+  if (APP.animMarker)       { APP.animMarker.remove();       APP.animMarker       = null; }
+  if (APP.incidentMarker)   { APP.incidentMarker.remove();   APP.incidentMarker   = null; }
+  if (APP.incidentPolyline) { APP.incidentPolyline.remove(); APP.incidentPolyline = null; }
+  if (APP.shockwaveCircle)  { APP.shockwaveCircle.remove();  APP.shockwaveCircle  = null; }
+
+  // Pick incident with jitter
+  var loc    = INCIDENT_LOCATIONS[Math.floor(Math.random() * INCIDENT_LOCATIONS.length)];
+  var incLat = loc.lat + (Math.random() - 0.5) * 0.004;
+  var incLng = loc.lng + (Math.random() - 0.5) * 0.004;
+  var incLatLng = L.latLng(incLat, incLng);
+
+  var typeMap = {
+    medical:  { icon: '\uD83D\uDE91', label: 'Medical Emergency' },
+    accident: { icon: '\uD83D\uDE97', label: 'Vehicle Accident'  },
+    fire:     { icon: '\uD83D\uDD25', label: 'Structure Fire'    }
+  };
+  var typeInfo = typeMap[loc.type] || typeMap.medical;
+
+  // Place incident marker
+  var incIcon = L.divIcon({
+    html: '<div class="incident-marker"><div class="incident-icon">' + typeInfo.icon + '</div>' +
+          '<div class="incident-label">' + typeInfo.label + '</div></div>',
+    className: '',
+    iconSize:   [90, 44],
+    iconAnchor: [45, 22]
+  });
+  APP.incidentMarker = L.marker(incLatLng, { icon: incIcon, zIndexOffset: 3000 }).addTo(APP.map);
+
+  // Shockwave circle
+  APP.shockwaveCircle = L.circle(incLatLng, {
+    radius: 100, color: '#ef4444', weight: 2,
+    fill: true, fillColor: '#ef4444', fillOpacity: 0.15, opacity: 0.6
+  }).addTo(APP.map);
+
+  // Pan map to incident
+  APP.map.panTo(incLatLng, { animate: true, duration: 0.8 });
+
+  // Find nearest ambulance marker
+  var nearestIdx  = 0;
+  var nearestDist = Infinity;
+  APP.ambMarkers.forEach(function(m, i) {
+    var d = L.latLng(m.getLatLng()).distanceTo(incLatLng);
+    if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
+  });
+
+  var ambMarker = APP.ambMarkers[nearestIdx];
+  if (!ambMarker) {
+    resetSimBtn();
+    return;
+  }
+
+  var ambSiteId = APP.ambSiteIds[nearestIdx];
+  var ambCoords = ambMarker.getLatLng();
+  var ambLat = ambCoords.lat;
+  var ambLng = ambCoords.lng;
+
+  // Button state
+  simulateResponseBtn.textContent = '\uD83D\uDEA8 Responding...';
+  simulateResponseBtn.disabled    = true;
+  simulateResponseBtn.classList.add('btn-responding');
+
+  // Animation duration based on distance (65 km/h estimate)
+  var animDuration = Math.min(Math.max((nearestDist / 1000 / 65 * 60) * 400, 1500), 8000);
+
+  function doAnimate(routeResult) {
+    var pathLatLngs;
+    if (routeResult && routeResult.coordinates && routeResult.coordinates.length > 1) {
+      // ORS returns [lng, lat] — convert to [lat, lng] for Leaflet
+      pathLatLngs = routeResult.coordinates.map(function(c) { return L.latLng(c[1], c[0]); });
+      if (routeResult.durationMinutes > 0) {
+        animDuration = Math.min(Math.max(routeResult.durationMinutes * 400, 1500), 8000);
+      }
+    } else {
+      pathLatLngs = [L.latLng(ambLat, ambLng), incLatLng];
+    }
+
+    // Red dashed route polyline
+    APP.incidentPolyline = L.polyline(pathLatLngs, {
+      color: '#ef4444', weight: 4, dashArray: '8 4', opacity: 0.85
+    }).addTo(APP.map);
+
+    // Moving ambulance marker
+    var movingIcon = L.divIcon({
+      html: '<div class="moving-ambulance-marker"><div class="amb-cross">+</div></div>',
+      className: '',
+      iconSize:   [22, 22],
+      iconAnchor: [11, 11]
+    });
+    APP.animMarker = L.marker(pathLatLngs[0], { icon: movingIcon, zIndexOffset: 2500 }).addTo(APP.map);
+
+    // Build cumulative distance array for uniform-speed interpolation
+    var totalDist = 0;
+    var cumDists = [0];
+    for (var i = 1; i < pathLatLngs.length; i++) {
+      totalDist += L.latLng(pathLatLngs[i-1]).distanceTo(L.latLng(pathLatLngs[i]));
+      cumDists.push(totalDist);
+    }
+
+    var startTime = null;
+    function animStep(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var progress = Math.min((timestamp - startTime) / animDuration, 1);
+      var targetDist = totalDist * progress;
+
+      var pos = pathLatLngs[pathLatLngs.length - 1];
+      for (var j = 0; j < cumDists.length - 1; j++) {
+        if (targetDist >= cumDists[j] && targetDist <= cumDists[j+1]) {
+          var segLen = cumDists[j+1] - cumDists[j];
+          var frac   = segLen > 0 ? (targetDist - cumDists[j]) / segLen : 0;
+          var la = pathLatLngs[j];
+          var lb = pathLatLngs[j+1];
+          pos = L.latLng(la.lat + (lb.lat - la.lat) * frac, la.lng + (lb.lng - la.lng) * frac);
+          break;
+        }
+      }
+      if (APP.animMarker) APP.animMarker.setLatLng(pos);
+
+      if (progress < 1) {
+        APP.animFrameId = requestAnimationFrame(animStep);
+      } else {
+        APP.animFrameId = null;
+        onArrival();
+      }
+    }
+    APP.animFrameId = requestAnimationFrame(animStep);
+  }
+
+  function onArrival() {
+    if (APP.incidentPolyline) { APP.incidentPolyline.remove(); APP.incidentPolyline = null; }
+    if (APP.shockwaveCircle)  { APP.shockwaveCircle.remove();  APP.shockwaveCircle  = null; }
+    if (APP.animMarker)       { APP.animMarker.remove();       APP.animMarker       = null; }
+
+    if (APP.incidentMarker) {
+      var stationName = ambSiteId && window.EMS.data.STAGING_SITES[ambSiteId]
+        ? window.EMS.data.STAGING_SITES[ambSiteId].label
+        : ('Unit ' + (nearestIdx + 1));
+      var resolvedIcon = L.divIcon({
+        html: '<div class="incident-marker resolved"><div class="incident-icon">\u2713</div>' +
+              '<div class="incident-label">Resolved</div></div>',
+        className: '',
+        iconSize:   [90, 44],
+        iconAnchor: [45, 22]
+      });
+      APP.incidentMarker.setIcon(resolvedIcon);
+      APP.incidentMarker
+        .bindPopup(
+          '<strong>\u2713 ' + typeInfo.label + ' Resolved</strong><br>' +
+          'Station: ' + stationName + '<br>' +
+          'Unit A' + (nearestIdx + 1)
+        )
+        .openPopup();
+    }
+
+    APP.incidentCleanupTimeout = setTimeout(function() {
+      APP.incidentCleanupTimeout = null;
+      if (APP.incidentMarker) { APP.incidentMarker.remove(); APP.incidentMarker = null; }
+      resetSimBtn();
+    }, 4000);
+  }
+
+  function resetSimBtn() {
+    simulateResponseBtn.textContent = 'Simulate Response';
+    simulateResponseBtn.disabled    = false;
+    simulateResponseBtn.classList.remove('btn-responding');
+  }
+
+  // Get ORS road route or fall back to straight line
+  if (window.EMS && window.EMS.api && typeof window.EMS.api.getRoute === 'function') {
+    window.EMS.api.getRoute(ambLat, ambLng, incLat, incLng).then(doAnimate).catch(function() { doAnimate(null); });
+  } else {
+    doAnimate(null);
+  }
+}
+
+// ─── AI PANEL (Change 2) ──────────────────────────────────────────────────────
 function initAIPanel() {
   if (!window.EMS || !window.EMS.api) return;
   window.EMS.api.checkHealth().then(function(ok) {
     if (ok) {
-      document.getElementById('ai-panel').style.display      = '';
-      document.getElementById('ai-panel-card').style.display = '';
+      var panel = document.getElementById('ai-panel');
+      if (panel) panel.style.display = '';
     }
   }).catch(function() {});
 }
@@ -960,16 +1218,18 @@ function buildAnalysisPayload() {
     APP.lastParams.fleet, APP.lastParams.timePeriod, APP.lastParams.dayType, APP.lastParams.callsPerDay
   );
   return {
-    params: APP.lastParams,
-    metrics: {
-      weightedCoverage8:     APP.lastMetrics.weightedCoverage8,
-      weightedCoverage12:    APP.lastMetrics.weightedCoverage12,
-      averageResponseTime:   APP.lastMetrics.averageResponseTime,
-      worstCaseResponseTime: APP.lastMetrics.worstCaseResponseTime,
-      totalWeightedDemand:   APP.lastMetrics.totalWeightedDemand,
-      availability:          avail,
-      zoneResults:           APP.lastMetrics.zoneResults
-    }
+    fleetSize:               APP.lastParams.fleet,
+    stagingConfig:           APP.lastParams.staging,
+    timePeriod:              APP.lastParams.timePeriod,
+    roadConditions:          APP.lastParams.roadCondition,
+    callVolume:              APP.lastParams.callsPerDay,
+    dayType:                 APP.lastParams.dayType,
+    weightedCoverage8:       APP.lastMetrics.weightedCoverage8,
+    weightedCoverage12:      APP.lastMetrics.weightedCoverage12,
+    averageResponseTime:     APP.lastMetrics.averageResponseTime,
+    worstCaseResponseTime:   APP.lastMetrics.worstCaseResponseTime,
+    availabilityProbability: avail,
+    zoneResults:             APP.lastMetrics.zoneResults
   };
 }
 
@@ -978,32 +1238,64 @@ function triggerAI(mode) {
     if (!window.EMS || !window.EMS.api || !APP.lastMetrics) return;
     APP._aiMode = mode;
 
-    // Update active button state
     document.querySelectorAll('.ai-mode-btn').forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
     });
 
-    var resultEl     = document.getElementById('ai-result');
-    var mainBodyEl   = document.getElementById('ai-panel-main-body');
-    resultEl.style.display     = '';
-    mainBodyEl.style.display   = '';
-    resultEl.innerHTML =
-      '<div class="skeleton-bar"></div>' +
-      '<div class="skeleton-bar"></div>' +
-      '<div class="skeleton-bar"></div>';
+    var responseArea = document.getElementById('ai-response-area');
+    if (!responseArea) return;
+
+    responseArea.innerHTML =
+      '<div class="ai-loading">' +
+        '<div class="skeleton-bar"></div>' +
+        '<div class="skeleton-bar"></div>' +
+        '<div class="skeleton-bar"></div>' +
+      '</div>';
 
     window.EMS.api.analyze(mode, buildAnalysisPayload()).then(function(text) {
-      resultEl.innerHTML =
-        '<p>' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>' +
-        '<button class="btn-copy" onclick="(function(){var txt=this.previousSibling.textContent;navigator.clipboard&&navigator.clipboard.writeText(txt)}).call(this)">Copy</button>';
-      mainBodyEl.innerHTML = resultEl.outerHTML;
-      mainBodyEl.style.display = '';
+      var escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+      responseArea.innerHTML =
+        '<div class="ai-response-content">' +
+          '<div class="ai-response-text">' + escaped + '</div>' +
+          '<button class="ai-copy-btn" onclick="(function(btn){' +
+            'var t=btn.parentNode.querySelector(\'.ai-response-text\').innerText;' +
+            'if(navigator.clipboard)navigator.clipboard.writeText(t);' +
+          '})(this)">Copy</button>' +
+        '</div>';
     }).catch(function() {
-      resultEl.innerHTML = '<p class="ai-error">AI analysis unavailable. Check backend connection.</p>';
+      responseArea.innerHTML = '<div class="ai-error-msg">AI analysis unavailable. Check backend connection.</div>';
     });
   } catch (e) {
     console.error('triggerAI error:', e);
   }
+}
+
+// ─── OPTIMAL STAGING MODAL (Change 4) ─────────────────────────────────────────
+function openOptimalModal() {
+  var fleet = parseInt(fleetSlider.value, 10);
+  // Combinations with replacement: C(n+k-1, k) where n=6, k=fleet
+  var n = 6;
+  var k = fleet;
+  var combos = 1;
+  for (var i = 0; i < k; i++) {
+    combos = Math.round(combos * (n + k - 1 - i) / (i + 1));
+  }
+  var statsEl = document.getElementById('modal-combo-stats');
+  if (statsEl) {
+    statsEl.innerHTML =
+      '<div class="modal-stat-box">' +
+        '<div class="modal-stat-number">' + combos + '</div>' +
+        '<div class="modal-stat-label">Configurations evaluated<br>for ' + fleet +
+          ' ambulance' + (fleet > 1 ? 's' : '') + ' across 6 sites</div>' +
+      '</div>';
+  }
+  var overlay = document.getElementById('optimal-info-overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeOptimalModal() {
+  var overlay = document.getElementById('optimal-info-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 // ─── SENSITIVITY ANALYSIS ─────────────────────────────────────────────────────
@@ -1024,7 +1316,7 @@ function runSensitivityAndRender() {
       callVolume:     'Call Volume',
       timeOfDay:      'Time of Day'
     };
-    sensitivityHeading.textContent = 'Sensitivity Analysis — ' + (paramLabels[paramKey] || paramKey);
+    sensitivityHeading.textContent = 'Sensitivity Analysis \u2014 ' + (paramLabels[paramKey] || paramKey);
 
     if (APP.sensitivityChart) {
       APP.sensitivityChart.destroy();
@@ -1114,18 +1406,24 @@ function runSimulationAndRender() {
     } else {
       renderSVGMap(metrics, params.staging, params);
     }
-
-    // Auto-trigger AI on first run (only if panel is visible)
-    if (APP._firstRun) {
-      APP._firstRun = false;
-      if (document.getElementById('ai-panel').style.display !== 'none') {
-        triggerAI('interpret');
-      }
-    }
   } catch (e) {
     console.error('runSimulationAndRender error:', e);
   }
 }
+
+// ─── MONKEY-PATCH: AI AUTO-TRIGGER (Change 2) ─────────────────────────────────
+// Wraps runSimulationAndRender after it is defined; triggers triggerAI('interpret')
+// 100ms after each run (ensures APP.lastMetrics is populated).
+var _originalRun = runSimulationAndRender;
+runSimulationAndRender = function() {
+  _originalRun.apply(this, arguments);
+  try {
+    var panel = document.getElementById('ai-panel');
+    if (panel && panel.style.display !== 'none' && typeof triggerAI === 'function') {
+      setTimeout(function() { triggerAI('interpret'); }, 100);
+    }
+  } catch(e) {}
+};
 
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
 fleetSlider.addEventListener('input', function() {
@@ -1159,14 +1457,9 @@ findOptimalBtn.addEventListener('click', function() {
   }
 });
 
+// Change 1: use simulateIncidentResponse instead of zone sweep
 simulateResponseBtn.addEventListener('click', function() {
-  if (!APP.lastMetrics) return;
-  // Animate to all zones sequentially via nearest ambulance
-  ZONE_ORDER.forEach(function(zoneId, idx) {
-    setTimeout(function() {
-      triggerZoneAnimation(zoneId, APP.lastMetrics);
-    }, idx * 600);
-  });
+  simulateIncidentResponse();
 });
 
 runSensitivityBtn.addEventListener('click', runSensitivityAndRender);
@@ -1179,23 +1472,17 @@ document.getElementById('map-reset-btn').addEventListener('click', function() {
   if (APP.map) APP.map.setView(MAP_CENTER, MAP_ZOOM);
 });
 
-// AI mode buttons
+// Change 2: AI mode buttons target #ai-response-area via triggerAI
 document.querySelectorAll('.ai-mode-btn').forEach(function(btn) {
   btn.addEventListener('click', function() {
     triggerAI(btn.getAttribute('data-mode'));
   });
 });
 
-document.getElementById('ai-analyze-btn').addEventListener('click', function() {
-  triggerAI(APP._aiMode);
-});
-
 // ─── INITIALIZATION ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Leaflet map
   initMap();
 
-  // Set default control values
   fleetSlider.value         = '2';
   amb1Select.value          = 'norton_rescue';
   amb2Select.value          = 'bsg_rescue';
@@ -1204,10 +1491,7 @@ document.addEventListener('DOMContentLoaded', function() {
   callVolumeSelect.value    = '24.5';
   dayTypeSelect.value       = 'weekday';
 
-  // Show correct number of dropdowns
   updateFleetDropdownVisibility(2);
-
-  // Run initial simulation
   runSimulationAndRender();
 
   // Check backend health (async — never blocks simulation)
