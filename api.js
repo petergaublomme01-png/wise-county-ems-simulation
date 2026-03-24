@@ -116,6 +116,33 @@ window.EMS.api = {
   },
 
   /**
+   * Fetches real road geometry between two points via the backend ORS proxy.
+   * Returns null on any failure — caller must fall back to straight-line.
+   * Never throws.
+   *
+   * @param {number} fromLat - Origin latitude
+   * @param {number} fromLng - Origin longitude
+   * @param {number} toLat   - Destination latitude
+   * @param {number} toLng   - Destination longitude
+   * @returns {Promise<{ coordinates: number[][], durationMinutes: number, distanceKm: number }|null>}
+   */
+  async getRoute(fromLat, fromLng, toLat, toLng) {
+    try {
+      const response = await fetch(
+        window.EMS_API_BASE_URL + '/api/travel/route' +
+        '?from_lat=' + fromLat +
+        '&from_lng=' + fromLng +
+        '&to_lat='   + toLat   +
+        '&to_lng='   + toLng
+      );
+      if (!response.ok) return null;
+      return response.json();
+    } catch (_err) {
+      return null;
+    }
+  },
+
+  /**
    * Fetches the real driving-time matrix between all 6 staging sites.
    * The backend proxies OpenRouteService and caches the result for 24 hours.
    * Durations are already converted to minutes by the backend.

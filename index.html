@@ -4,38 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wise County EMS Deployment Simulation</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="style.css">
-  <!-- Chart.js 4.4.1 UMD build — only permitted external dependency -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════════════════════ -->
-<header class="app-header">
-  <h1>Wise County EMS Deployment Simulation</h1>
-  <span class="subtitle">Wise County, Virginia &mdash; UVA Wise Modeling Competition Spring 2026</span>
-</header>
-
-<!-- ═══════════════════════════════════════════════════════════
-     APP LAYOUT
-═══════════════════════════════════════════════════════════ -->
 <div class="app-layout">
 
-  <!-- ─── LEFT PANEL ───────────────────────────────────── -->
-  <div class="left-panel">
+  <!-- ═══════════════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <!-- Branding -->
+    <div class="sidebar-brand">
+      <h1 class="sidebar-title">Wise County EMS</h1>
+      <span class="sidebar-subtitle">Deployment Simulation</span>
+      <span class="sidebar-badge">UVA Wise Competition 2026</span>
+    </div>
 
     <!-- Section 1: Fleet Configuration -->
-    <div class="section">
-      <div class="section-heading">Fleet Configuration</div>
+    <div class="sidebar-section">
+      <p class="section-label">Fleet Configuration</p>
 
       <div class="control-row">
-        <label class="control-label">
-          Ambulances <span id="fleet-display" class="fleet-display">2</span>
-        </label>
-        <div class="fleet-row">
+        <label class="control-label">Ambulances</label>
+        <div class="fleet-slider-row">
           <input type="range" id="fleet-slider" min="1" max="4" value="2" step="1">
+          <div class="fleet-display" id="fleet-display">2</div>
         </div>
       </div>
 
@@ -45,7 +43,7 @@
           <option value="norton_rescue">Norton Rescue Squad</option>
           <option value="norton_fire">Norton Fire Station 1</option>
           <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
-          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="bsg_fire">Big Stone Gap Fire Dept</option>
           <option value="wise_rescue">Wise Rescue Squad</option>
           <option value="wise_fire">Wise Fire Department</option>
         </select>
@@ -57,7 +55,7 @@
           <option value="norton_rescue">Norton Rescue Squad</option>
           <option value="norton_fire">Norton Fire Station 1</option>
           <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
-          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="bsg_fire">Big Stone Gap Fire Dept</option>
           <option value="wise_rescue">Wise Rescue Squad</option>
           <option value="wise_fire">Wise Fire Department</option>
         </select>
@@ -69,7 +67,7 @@
           <option value="norton_rescue">Norton Rescue Squad</option>
           <option value="norton_fire">Norton Fire Station 1</option>
           <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
-          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="bsg_fire">Big Stone Gap Fire Dept</option>
           <option value="wise_rescue">Wise Rescue Squad</option>
           <option value="wise_fire">Wise Fire Department</option>
         </select>
@@ -81,20 +79,21 @@
           <option value="norton_rescue">Norton Rescue Squad</option>
           <option value="norton_fire">Norton Fire Station 1</option>
           <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
-          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="bsg_fire">Big Stone Gap Fire Dept</option>
           <option value="wise_rescue">Wise Rescue Squad</option>
           <option value="wise_fire">Wise Fire Department</option>
         </select>
       </div>
 
-      <div class="control-row" style="margin-top:12px">
-        <button class="btn btn-primary" id="find-optimal-btn">Find optimal staging</button>
+      <div class="control-row" style="margin-top:10px">
+        <button class="btn btn-primary" id="find-optimal-btn">Find Optimal Staging</button>
+        <button class="btn btn-simulate" id="simulate-response-btn">Simulate Response</button>
       </div>
     </div>
 
     <!-- Section 2: Scenario Parameters -->
-    <div class="section">
-      <div class="section-heading">Scenario Parameters</div>
+    <div class="sidebar-section">
+      <p class="section-label">Scenario Parameters</p>
 
       <div class="control-row">
         <label class="control-label" for="time-period-select">Time period</label>
@@ -136,8 +135,8 @@
     </div>
 
     <!-- Section 3: Sensitivity Analysis -->
-    <div class="section">
-      <div class="section-heading">Sensitivity Analysis</div>
+    <div class="sidebar-section">
+      <p class="section-label">Sensitivity Analysis</p>
       <div class="control-row">
         <label class="control-label" for="sensitivity-param-select">Parameter to vary</label>
         <select id="sensitivity-param-select">
@@ -148,58 +147,98 @@
         </select>
       </div>
       <div class="control-row">
-        <button class="btn btn-secondary" id="run-sensitivity-btn">Run sensitivity analysis</button>
+        <button class="btn btn-secondary" id="run-sensitivity-btn">Run Analysis</button>
       </div>
     </div>
 
-  </div><!-- end left-panel -->
+    <!-- Section 4: AI Analysis (hidden until health check passes) -->
+    <div class="sidebar-section" id="ai-panel" style="display:none">
+      <p class="section-label">AI Analysis &mdash; Claude Sonnet</p>
+      <div class="ai-mode-row">
+        <button class="ai-mode-btn active" data-mode="interpret">Interpret</button>
+        <button class="ai-mode-btn" data-mode="critique">Find Weaknesses</button>
+        <button class="ai-mode-btn" data-mode="report_paragraph">Report Para</button>
+        <button class="ai-mode-btn" data-mode="optimize">Optimize</button>
+      </div>
+      <button class="btn btn-secondary" id="ai-analyze-btn">Analyze with Claude</button>
+      <div id="ai-result" class="ai-result-box" style="display:none"></div>
+    </div>
 
-  <!-- ─── RIGHT PANEL ──────────────────────────────────── -->
-  <div class="right-panel">
+  </aside>
 
-    <!-- Section 1: Metric Cards -->
-    <div class="results-section">
-      <div class="panel-heading">Performance Metrics</div>
-      <div class="metric-cards">
-        <div class="metric-card" id="card-cov8">
-          <span class="metric-value" id="val-cov8">—</span>
-          <span class="metric-unit">%</span>
-          <span class="metric-title">Coverage &le;8 min</span>
-        </div>
-        <div class="metric-card" id="card-cov12">
-          <span class="metric-value" id="val-cov12">—</span>
-          <span class="metric-unit">%</span>
-          <span class="metric-title">Coverage &le;12 min</span>
-        </div>
-        <div class="metric-card" id="card-avgrt">
-          <span class="metric-value" id="val-avgrt">—</span>
-          <span class="metric-unit">min avg</span>
-          <span class="metric-title">Avg response time</span>
-        </div>
-        <div class="metric-card" id="card-wrstrt">
-          <span class="metric-value" id="val-wrstrt">—</span>
-          <span class="metric-unit">min worst</span>
-          <span class="metric-title">Worst-case RT</span>
-        </div>
-        <div class="metric-card" id="card-avail">
-          <span class="metric-value" id="val-avail">—</span>
-          <span class="metric-unit">% avail</span>
-          <span class="metric-title">Unit availability</span>
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Map -->
+    <div id="map-container">
+      <div id="ems-leaflet-map"></div>
+
+      <!-- SVG fallback — shown only if Leaflet init fails -->
+      <div id="svg-fallback" style="display:none">
+        <p class="fallback-notice">Interactive map unavailable — showing schematic view</p>
+        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- Map legend overlay -->
+      <div id="map-legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-row"><div class="legend-dot green"></div> Under 8 min</div>
+        <div class="legend-row"><div class="legend-dot amber"></div> 8–12 min</div>
+        <div class="legend-row"><div class="legend-dot red"></div> Over 12 min</div>
+        <div class="legend-row"><div class="legend-amb">+</div> Ambulance</div>
+        <div class="legend-row"><div class="legend-hosp">H</div> Hospital</div>
+        <div class="legend-reset">
+          <button class="btn-map-reset" id="map-reset-btn">Reset view</button>
         </div>
       </div>
     </div>
 
-    <!-- Section 2: SVG Map -->
-    <div class="results-section">
-      <div class="panel-heading">Zone Coverage Map</div>
-      <div class="svg-map-card">
-        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-          <!-- Populated by inline script -->
-        </svg>
+    <!-- Metric Cards -->
+    <div class="metric-row">
+      <div class="metric-card" id="card-cov8">
+        <span class="metric-value" id="val-cov8">—</span>
+        <span class="metric-unit">%</span>
+        <span class="metric-title">Coverage &le;8 min</span>
+        <span class="metric-explanation" id="expl-cov8">&nbsp;</span>
+      </div>
+      <div class="metric-card" id="card-cov12">
+        <span class="metric-value" id="val-cov12">—</span>
+        <span class="metric-unit">%</span>
+        <span class="metric-title">Coverage &le;12 min</span>
+        <span class="metric-explanation" id="expl-cov12">&nbsp;</span>
+      </div>
+      <div class="metric-card" id="card-avgrt">
+        <span class="metric-value" id="val-avgrt">—</span>
+        <span class="metric-unit">min avg</span>
+        <span class="metric-title">Avg Response Time</span>
+        <span class="metric-explanation" id="expl-avgrt">Population-weighted average</span>
+      </div>
+      <div class="metric-card" id="card-wrstrt">
+        <span class="metric-value" id="val-wrstrt">—</span>
+        <span class="metric-unit">min worst</span>
+        <span class="metric-title">Worst-case RT</span>
+        <span class="metric-explanation" id="expl-wrstrt">&nbsp;</span>
+      </div>
+      <div class="metric-card" id="card-avail">
+        <span class="metric-value" id="val-avail">—</span>
+        <span class="metric-unit">% avail</span>
+        <span class="metric-title">Unit Availability</span>
+        <span class="metric-explanation" id="expl-avail">&nbsp;</span>
       </div>
     </div>
 
-    <!-- Section 3: Response Time Breakdown Table -->
+    <!-- AI Panel (main content area) -->
+    <div class="results-section" id="ai-panel-card" style="display:none">
+      <div class="panel-heading">
+        <span class="ai-heading-label">AI ANALYSIS</span>
+        <span class="ai-model-badge">Claude Sonnet</span>
+      </div>
+      <div class="ai-panel-body" id="ai-panel-main-body" style="display:none"></div>
+    </div>
+
+    <!-- Response Time Breakdown Table -->
     <div class="results-section response-table-section">
       <div class="panel-heading">Response Time Breakdown</div>
       <table class="response-table" id="response-table">
@@ -207,8 +246,8 @@
           <tr>
             <th>Zone</th>
             <th>Population</th>
-            <th>Nearest station</th>
-            <th>Response time</th>
+            <th>Nearest Station</th>
+            <th>Response Time</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -218,16 +257,19 @@
       </table>
     </div>
 
-    <!-- Section 4: Sensitivity Chart (hidden until analysis runs) -->
+    <!-- Sensitivity Chart (hidden until analysis runs) -->
     <div class="results-section sensitivity-chart-card" id="sensitivity-card">
-      <div class="panel-heading" id="sensitivity-heading">Sensitivity Analysis</div>
+      <div class="panel-heading">
+        <span id="sensitivity-heading">Sensitivity Analysis</span>
+        <button class="sensitivity-clear-btn" id="sensitivity-clear-btn">Clear</button>
+      </div>
       <div class="sensitivity-chart-wrap">
         <canvas id="sensitivity-chart"></canvas>
       </div>
       <div class="sensitivity-interpretation" id="sensitivity-interpretation"></div>
     </div>
 
-    <!-- Section 5: Optimal Staging Recommendation -->
+    <!-- Optimal Staging Recommendation -->
     <div class="results-section">
       <div class="panel-heading">Optimal Staging Recommendation</div>
       <div class="optimal-staging-card" id="optimal-staging-card">
@@ -235,44 +277,72 @@
       </div>
     </div>
 
-  </div><!-- end right-panel -->
+  </main>
 
-</div><!-- end app-layout -->
+</div><!-- end .app-layout -->
 
-<!-- ═══════════════════════════════════════════════════════════
-     SCRIPTS — order matters: data.js, simulation.js, then inline
-═══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPTS — order is critical
+═══════════════════════════════════════════════════════ -->
 <script src="data.js"></script>
 <script src="simulation.js"></script>
-<script>window.EMS_API_BASE_URL = 'https://wise-county-ems-simulation-production.up.railway.app';</script>
+<script>window.EMS_API_BASE_URL = window.EMS_API_BASE_URL || 'https://wise-county-ems-simulation-production.up.railway.app';</script>
 <script src="api.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════
 // INLINE SCRIPT — Wise County EMS Simulation
-// Depends on: window.EMS.data (data.js) and window.EMS.simulation (simulation.js)
+// Depends on: window.EMS.data (data.js), window.EMS.simulation (simulation.js),
+//             window.EMS.api (api.js), L (Leaflet), Chart (Chart.js)
 // ════════════════════════════════════════════════════════════
 
-// ─── SECTION 1: CONSTANTS & STATE ────────────────────────────────────────────
-
-var COLOR = {
-  green:  '#2d8a4e',
-  amber:  '#d97706',
-  red:    '#dc2626',
-  blue:   '#1d6fb8',
-  hosp:   '#7c2020',
-  white:  '#ffffff',
-  darkBg: '#1e293b',
-  zoneBg: '#f0f4f8'
-};
-
-// West-to-east zone order
+// ─── ZONE ORDER (defined here — do not use window.EMS.data.ZONE_ORDER) ────────
 var ZONE_ORDER = ['bsg', 'norton_bsg_corridor', 'norton', 'wise_norton_corridor', 'wise'];
 
-// Chart.js instance — must be destroyed before recreating to avoid "canvas in use" error
-var sensitivityChart = null;
+// ─── GPS CONSTANTS ─────────────────────────────────────────────────────────────
+var STATION_COORDS = {
+  wise_rescue:   [36.9759, -82.5757],
+  wise_fire:     [36.9780, -82.5740],
+  norton_rescue: [36.9334, -82.6290],
+  norton_fire:   [36.9310, -82.6270],
+  bsg_rescue:    [36.8586, -82.7832],
+  bsg_fire:      [36.8600, -82.7850]
+};
 
-// ─── SECTION 2: DOM REFERENCES ───────────────────────────────────────────────
+var ZONE_COORDS = {
+  wise:                 [36.9759, -82.5757],
+  norton:               [36.9334, -82.6290],
+  bsg:                  [36.8586, -82.7832],
+  wise_norton_corridor: [36.9550, -82.6020],
+  norton_bsg_corridor:  [36.8960, -82.7060]
+};
 
+var HOSPITAL_COORDS = {
+  nch: { latlng: [36.9329, -82.6422], label: 'Norton Community Hospital',    addr: '100 15th St NW, Norton VA' },
+  lph: { latlng: [36.8771, -82.7543], label: 'Lonesome Pine Hospital',       addr: '1990 Holton Ave E, Big Stone Gap VA' }
+};
+
+var MAP_CENTER = [36.9100, -82.6800];
+var MAP_ZOOM   = 11;
+
+// ─── APP STATE ─────────────────────────────────────────────────────────────────
+var APP = {
+  map:            null,
+  ambMarkers:     [],
+  coverageRings:  [],
+  zoneCircles:    {},
+  animPolyline:   null,
+  animMarker:     null,
+  animFrameId:    null,
+  leafletOk:      true,
+  sensitivityChart: null,
+  lastMetrics:    null,
+  lastParams:     null,
+  _optimalResult: null,
+  _aiMode:        'interpret',
+  _firstRun:      true
+};
+
+// ─── DOM REFS ──────────────────────────────────────────────────────────────────
 var fleetSlider          = document.getElementById('fleet-slider');
 var fleetDisplay         = document.getElementById('fleet-display');
 var amb1Select           = document.getElementById('amb-1-select');
@@ -286,7 +356,7 @@ var dayTypeSelect        = document.getElementById('day-type-select');
 var sensitivityParamSel  = document.getElementById('sensitivity-param-select');
 var findOptimalBtn       = document.getElementById('find-optimal-btn');
 var runSensitivityBtn    = document.getElementById('run-sensitivity-btn');
-var emsMap               = document.getElementById('ems-map');
+var simulateResponseBtn  = document.getElementById('simulate-response-btn');
 var responseTableBody    = document.getElementById('response-table-body');
 var optimalStagingCard   = document.getElementById('optimal-staging-card');
 var sensitivityCard      = document.getElementById('sensitivity-card');
@@ -294,7 +364,6 @@ var sensitivityChartCanvas = document.getElementById('sensitivity-chart');
 var sensitivityInterpEl  = document.getElementById('sensitivity-interpretation');
 var sensitivityHeading   = document.getElementById('sensitivity-heading');
 
-// Metric card elements
 var cardCov8   = document.getElementById('card-cov8');
 var cardCov12  = document.getElementById('card-cov12');
 var cardAvgRT  = document.getElementById('card-avgrt');
@@ -305,28 +374,29 @@ var valCov12   = document.getElementById('val-cov12');
 var valAvgRT   = document.getElementById('val-avgrt');
 var valWrstRT  = document.getElementById('val-wrstrt');
 var valAvail   = document.getElementById('val-avail');
+var explCov8   = document.getElementById('expl-cov8');
+var explCov12  = document.getElementById('expl-cov12');
+var explWrstRT = document.getElementById('expl-wrstrt');
+var explAvail  = document.getElementById('expl-avail');
 
-// ─── SECTION 3: GET SCENARIO PARAMS ──────────────────────────────────────────
-
+// ─── GET SCENARIO PARAMS ───────────────────────────────────────────────────────
 function getScenarioParams() {
   var fleet = parseInt(fleetSlider.value, 10);
   var allSelects = [amb1Select, amb2Select, amb3Select, amb4Select];
   var staging = allSelects.slice(0, fleet).map(function(s) { return s.value; });
   return {
-    fleet:        fleet,
-    staging:      staging,
-    timePeriod:   timePeriodSelect.value,
+    fleet:         fleet,
+    staging:       staging,
+    timePeriod:    timePeriodSelect.value,
     roadCondition: roadConditionSelect.value,
-    callsPerDay:  parseFloat(callVolumeSelect.value),
-    dayType:      dayTypeSelect.value
+    callsPerDay:   parseFloat(callVolumeSelect.value),
+    dayType:       dayTypeSelect.value
   };
 }
 
-// ─── SECTION 4: FLEET DROPDOWN VISIBILITY ────────────────────────────────────
-
+// ─── FLEET DROPDOWN VISIBILITY ────────────────────────────────────────────────
 function updateFleetDropdownVisibility(fleet) {
   fleetDisplay.textContent = fleet;
-  // Slots 2, 3, 4 are conditionally shown; slot 1 is always visible
   var slotIds = ['amb-slot-2', 'amb-slot-3', 'amb-slot-4'];
   slotIds.forEach(function(id, idx) {
     var el = document.getElementById(id);
@@ -334,11 +404,22 @@ function updateFleetDropdownVisibility(fleet) {
   });
 }
 
-// ─── SECTION 5: RENDER METRIC CARDS ──────────────────────────────────────────
+// ─── ANIMATE COUNT-UP ──────────────────────────────────────────────────────────
+function animateCount(el, toVal, duration) {
+  var start = null;
+  var fromVal = parseFloat(el.textContent) || 0;
+  function step(ts) {
+    if (!start) start = ts;
+    var progress = Math.min((ts - start) / duration, 1);
+    el.textContent = (fromVal + (toVal - fromVal) * progress).toFixed(1);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = toVal.toFixed(1);
+  }
+  requestAnimationFrame(step);
+}
 
+// ─── COLOR CLASS ──────────────────────────────────────────────────────────────
 function colorClass(value, greenThreshold, amberThreshold, inverted) {
-  // inverted=false: higher is better (coverage%)
-  // inverted=true: lower is better (response time)
   if (!inverted) {
     if (value >= greenThreshold) return 'green';
     if (value >= amberThreshold) return 'amber';
@@ -350,233 +431,80 @@ function colorClass(value, greenThreshold, amberThreshold, inverted) {
   }
 }
 
-function setCard(cardEl, valueEl, displayText, cls) {
-  cardEl.className = 'metric-card ' + cls;
-  valueEl.textContent = displayText;
-}
-
+// ─── RENDER METRIC CARDS ──────────────────────────────────────────────────────
 function renderMetricCards(metrics, availability) {
   if (!metrics) return;
+  var data = window.EMS.data;
 
-  var cov8Pct  = metrics.weightedCoverage8 * 100;
+  var cov8Pct  = metrics.weightedCoverage8  * 100;
   var cov12Pct = metrics.weightedCoverage12 * 100;
   var avgRT    = metrics.averageResponseTime;
   var worstRT  = metrics.worstCaseResponseTime;
   var availPct = availability * 100;
 
-  setCard(cardCov8,   valCov8,   cov8Pct.toFixed(1),  colorClass(cov8Pct,  80, 60, false));
-  setCard(cardCov12,  valCov12,  cov12Pct.toFixed(1), colorClass(cov12Pct, 95, 80, false));
-  setCard(cardAvgRT,  valAvgRT,  avgRT.toFixed(1),    colorClass(avgRT,    8,  12, true));
-  setCard(cardWrstRT, valWrstRT, worstRT.toFixed(1),  colorClass(worstRT,  8,  12, true));
-  setCard(cardAvail,  valAvail,  availPct.toFixed(1), colorClass(availPct, 80, 60, false));
+  // Count zones under 8 min
+  var under8count = metrics.zoneResults.filter(function(zr) { return zr.minResponseTime <= 8; }).length;
+
+  // Find worst zone
+  var worstZone = metrics.zoneResults.reduce(function(prev, curr) {
+    return curr.minResponseTime > prev.minResponseTime ? curr : prev;
+  }, metrics.zoneResults[0]);
+
+  // Update cards with status class
+  cardCov8.className   = 'metric-card ' + colorClass(cov8Pct, 80, 60, false);
+  cardCov12.className  = 'metric-card ' + colorClass(cov12Pct, 95, 80, false);
+  cardAvgRT.className  = 'metric-card ' + colorClass(avgRT, 8, 12, true);
+  cardWrstRT.className = 'metric-card ' + colorClass(worstRT, 8, 12, true);
+  cardAvail.className  = 'metric-card ' + colorClass(availPct, 80, 60, false);
+
+  // Animate count-up
+  animateCount(valCov8,   cov8Pct,  600);
+  animateCount(valCov12,  cov12Pct, 600);
+  animateCount(valAvgRT,  avgRT,    600);
+  animateCount(valWrstRT, worstRT,  600);
+  animateCount(valAvail,  availPct, 600);
+
+  // Update explanations
+  explCov8.textContent  = under8count + ' of 5 zones reached in under 8 minutes';
+  explCov12.textContent = 'Constraint ' + (worstRT <= 12 ? 'SATISFIED' : 'VIOLATED') + ' — worst ' + worstRT.toFixed(1) + ' min';
+  explWrstRT.textContent = worstZone ? ('Slowest: ' + worstZone.label + ' at ' + worstZone.minResponseTime.toFixed(1) + ' min') : '';
+  explAvail.textContent  = '~' + Math.round(availPct) + '% chance a unit is free';
 }
 
-// ─── SECTION 6: BUILD SVG CONTENT ────────────────────────────────────────────
-
-function zoneColor(rt) {
-  if (rt <= 8)  return COLOR.green;
-  if (rt <= 12) return COLOR.amber;
-  return COLOR.red;
-}
-
-function buildSVGContent(metrics, stagingConfig, params) {
-  try {
-    var data  = window.EMS.data;
-    var zones = data.ZONES;
-    var parts = [];
-
-    // Background
-    parts.push('<rect width="1000" height="500" fill="#ffffff"/>');
-
-    // ── Road edges (drawn first, behind everything) ───────────────────────
-    data.ROAD_EDGES.forEach(function(edge) {
-      var fromZ = zones[edge.from];
-      var toZ   = zones[edge.to];
-      var mx    = (fromZ.mapX + toZ.mapX) / 2;
-      var my    = (fromZ.mapY + toZ.mapY) / 2;
-      var angle = Math.atan2(toZ.mapY - fromZ.mapY, toZ.mapX - fromZ.mapX) * 180 / Math.PI;
-
-      parts.push(
-        '<line x1="' + fromZ.mapX + '" y1="' + fromZ.mapY + '"' +
-        ' x2="' + toZ.mapX + '" y2="' + toZ.mapY + '"' +
-        ' stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="none"/>'
-      );
-
-      // Road label — slightly offset perpendicular to the line
-      var perp = angle + 90;
-      var perpRad = perp * Math.PI / 180;
-      var lx = mx + 12 * Math.cos(perpRad);
-      var ly = my + 12 * Math.sin(perpRad);
-      parts.push(
-        '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '"' +
-        ' font-family="sans-serif" font-size="9" fill="#64748b"' +
-        ' text-anchor="middle" dominant-baseline="middle">' +
-        edge.road + ' · ' + edge.minutes + ' min</text>'
-      );
-    });
-
-    // ── Build a response-time map for zones ───────────────────────────────
-    var rtByZone = {};
-    var nearestByZone = {};
-    if (metrics && metrics.zoneResults) {
-      metrics.zoneResults.forEach(function(zr) {
-        rtByZone[zr.zoneId]      = zr.minResponseTime;
-        nearestByZone[zr.zoneId] = zr.nearestStageSiteId;
-      });
-    }
-
-    // ── Zone circles ─────────────────────────────────────────────────────
-    ZONE_ORDER.forEach(function(zoneId) {
-      var zone = zones[zoneId];
-      var rt   = rtByZone[zoneId] !== undefined ? rtByZone[zoneId] : null;
-      var r    = zone.type === 'town' ? 45 : 30;
-      var fill = rt !== null ? zoneColor(rt) : '#94a3b8';
-      var rtLabel = rt !== null ? rt.toFixed(1) + ' min' : '?';
-
-      // Zone circle
-      parts.push(
-        '<circle cx="' + zone.mapX + '" cy="' + zone.mapY + '" r="' + r + '"' +
-        ' fill="' + fill + '" stroke="#ffffff" stroke-width="2"/>'
-      );
-
-      // Response time text inside circle (white)
-      parts.push(
-        '<text x="' + zone.mapX + '" y="' + (zone.mapY - 5) + '"' +
-        ' font-family="sans-serif" font-size="11" font-weight="700"' +
-        ' fill="#ffffff" text-anchor="middle" dominant-baseline="middle">' +
-        rtLabel + '</text>'
-      );
-
-      // Zone label below circle
-      parts.push(
-        '<text x="' + zone.mapX + '" y="' + (zone.mapY + r + 14) + '"' +
-        ' font-family="sans-serif" font-size="10" font-weight="600"' +
-        ' fill="#1e293b" text-anchor="middle">' +
-        zone.label + '</text>'
-      );
-    });
-
-    // ── Hospital markers ──────────────────────────────────────────────────
-    Object.values(data.HOSPITALS).forEach(function(h) {
-      parts.push(
-        '<rect x="' + (h.x - 13) + '" y="' + (h.y - 13) + '" width="26" height="26"' +
-        ' fill="' + COLOR.hosp + '" stroke="#ffffff" stroke-width="1.5" rx="3"/>'
-      );
-      parts.push(
-        '<text x="' + h.x + '" y="' + h.y + '"' +
-        ' font-family="sans-serif" font-size="14" font-weight="900"' +
-        ' fill="#ffffff" text-anchor="middle" dominant-baseline="middle">H</text>'
-      );
-      parts.push(
-        '<text x="' + h.x + '" y="' + (h.y + 22) + '"' +
-        ' font-family="sans-serif" font-size="9" font-weight="600"' +
-        ' fill="' + COLOR.hosp + '" text-anchor="middle">' + h.shortLabel + '</text>'
-      );
-    });
-
-    // ── Ambulance staging markers ─────────────────────────────────────────
-    // Build a map: siteId → list of ambulance numbers staged there
-    var ambsBySite = {};
-    stagingConfig.forEach(function(siteId, idx) {
-      if (!ambsBySite[siteId]) ambsBySite[siteId] = [];
-      ambsBySite[siteId].push(idx + 1);
-    });
-
-    Object.keys(ambsBySite).forEach(function(siteId) {
-      var site    = data.STAGING_SITES[siteId];
-      var zone    = zones[site.zone];
-      var baseX   = zone.mapX + site.displayDx;
-      var baseY   = zone.mapY + site.displayDy;
-      var ambNums = ambsBySite[siteId];
-
-      // Blue "+" marker
-      parts.push(
-        '<text x="' + baseX + '" y="' + baseY + '"' +
-        ' font-family="sans-serif" font-size="20" font-weight="900"' +
-        ' fill="' + COLOR.blue + '" text-anchor="middle" dominant-baseline="middle">+</text>'
-      );
-
-      // Ambulance number label(s)
-      var label = ambNums.map(function(n) { return 'A' + n; }).join(',');
-      parts.push(
-        '<text x="' + baseX + '" y="' + (baseY + 16) + '"' +
-        ' font-family="sans-serif" font-size="9" font-weight="700"' +
-        ' fill="' + COLOR.blue + '" text-anchor="middle">' + label + '</text>'
-      );
-
-      // Small label for site name (truncated)
-      var shortName = site.label.replace('Big Stone Gap ', 'BSG ').replace(' Squad', ' Sq').replace(' Department', ' Dept').replace(' Station 1', ' Stn1');
-      parts.push(
-        '<text x="' + baseX + '" y="' + (baseY + 27) + '"' +
-        ' font-family="sans-serif" font-size="8"' +
-        ' fill="#475569" text-anchor="middle">' + shortName + '</text>'
-      );
-    });
-
-    // ── Legend (bottom-left) ──────────────────────────────────────────────
-    var lx = 20, ly = 390;
-    parts.push('<rect x="' + lx + '" y="' + ly + '" width="160" height="90" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="4"/>');
-    parts.push('<text x="' + (lx+8) + '" y="' + (ly+14) + '" font-family="sans-serif" font-size="9" font-weight="700" fill="#64748b" text-transform="uppercase">LEGEND</text>');
-
-    var legendItems = [
-      { color: COLOR.green, label: 'Under 8 min response' },
-      { color: COLOR.amber, label: '8–12 min response' },
-      { color: COLOR.red,   label: 'Over 12 min response' }
-    ];
-    legendItems.forEach(function(item, i) {
-      var iy = ly + 26 + i * 17;
-      parts.push('<circle cx="' + (lx+10) + '" cy="' + iy + '" r="5" fill="' + item.color + '"/>');
-      parts.push('<text x="' + (lx+20) + '" y="' + (iy+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">' + item.label + '</text>');
-    });
-
-    // Ambulance and hospital legend icons
-    var iy4 = ly + 26 + 3 * 17;
-    parts.push('<text x="' + (lx+9) + '" y="' + iy4 + '" font-family="sans-serif" font-size="12" font-weight="900" fill="' + COLOR.blue + '" text-anchor="middle" dominant-baseline="middle">+</text>');
-    parts.push('<text x="' + (lx+20) + '" y="' + (iy4+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">Ambulance staging</text>');
-
-    var iy5 = ly + 26 + 4 * 17;
-    parts.push('<rect x="' + (lx+4) + '" y="' + (iy5-6) + '" width="12" height="12" fill="' + COLOR.hosp + '" rx="1"/>');
-    parts.push('<text x="' + (lx+10) + '" y="' + iy5 + '" font-family="sans-serif" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">H</text>');
-    parts.push('<text x="' + (lx+20) + '" y="' + (iy5+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">Hospital</text>');
-
-    return parts.join('\n');
-  } catch (e) {
-    console.error('buildSVGContent error:', e);
-    return '<text x="500" y="250" text-anchor="middle" fill="red">Map rendering error</text>';
-  }
-}
-
-// ─── SECTION 7: RENDER SVG MAP ────────────────────────────────────────────────
-
-function renderSVGMap(metrics, stagingConfig, params) {
-  emsMap.innerHTML = buildSVGContent(metrics, stagingConfig, params);
-}
-
-// ─── SECTION 8: RENDER RESPONSE TABLE ────────────────────────────────────────
-
+// ─── RENDER RESPONSE TABLE ─────────────────────────────────────────────────────
 function renderResponseTable(metrics) {
   if (!metrics) return;
   var data = window.EMS.data;
   var rows = '';
   metrics.zoneResults.forEach(function(zr) {
-    var rt      = zr.minResponseTime;
-    var status  = rt <= 8 ? 'PASS' : (rt <= 12 ? 'WARNING' : 'FAIL');
-    var pillCls = rt <= 8 ? 'pass' : (rt <= 12 ? 'warning' : 'fail');
-    var station = zr.nearestStageSiteId ? data.STAGING_SITES[zr.nearestStageSiteId].label : '—';
+    var rt       = zr.minResponseTime;
+    var status   = rt <= 8 ? 'PASS' : (rt <= 12 ? 'WARNING' : 'FAIL');
+    var pillCls  = rt <= 8 ? 'pass'  : (rt <= 12 ? 'warning' : 'fail');
+    var rowCls   = rt <= 8 ? 'row-green' : (rt <= 12 ? 'row-amber' : 'row-red');
+    var station  = zr.nearestStageSiteId ? data.STAGING_SITES[zr.nearestStageSiteId].label : '—';
     rows +=
-      '<tr>' +
+      '<tr class="' + rowCls + '" data-zone="' + zr.zoneId + '">' +
         '<td><strong>' + zr.label + '</strong></td>' +
         '<td>' + zr.population.toLocaleString() + '</td>' +
-        '<td style="font-size:0.82rem">' + station + '</td>' +
+        '<td style="font-size:0.75rem">' + station + '</td>' +
         '<td><strong>' + rt.toFixed(1) + ' min</strong></td>' +
         '<td><span class="status-pill ' + pillCls + '">' + status + '</span></td>' +
       '</tr>';
   });
   responseTableBody.innerHTML = rows;
+
+  // Wire row click → response animation
+  responseTableBody.querySelectorAll('tr').forEach(function(tr) {
+    tr.addEventListener('click', function() {
+      responseTableBody.querySelectorAll('tr').forEach(function(r) { r.classList.remove('row-selected'); });
+      tr.classList.add('row-selected');
+      var zoneId = tr.getAttribute('data-zone');
+      if (APP.lastMetrics) triggerZoneAnimation(zoneId, APP.lastMetrics);
+    });
+  });
 }
 
-// ─── SECTION 9: RENDER OPTIMAL STAGING ───────────────────────────────────────
-
+// ─── RENDER OPTIMAL STAGING ───────────────────────────────────────────────────
 function renderOptimalStaging(params) {
   try {
     var sim    = window.EMS.simulation;
@@ -584,77 +512,505 @@ function renderOptimalStaging(params) {
     var result = sim.findOptimalStaging(
       params.fleet, params.timePeriod, params.roadCondition, params.dayType, params.callsPerDay
     );
+
+    APP._optimalResult = result;
+
     if (!result) {
       optimalStagingCard.innerHTML = '<p class="text-muted">Unable to compute optimal staging.</p>';
       return;
     }
 
-    var m            = result.metrics;
-    var satisfies    = m.worstCaseResponseTime <= 12;
-    var badgeClass   = satisfies ? 'satisfied' : 'violated';
-    var badgeText    = satisfies ? '12-min constraint SATISFIED' : '12-min constraint VIOLATED';
-    var cov8pct      = (m.weightedCoverage8 * 100).toFixed(1);
-    var cov12pct     = (m.weightedCoverage12 * 100).toFixed(1);
-    var worstStr     = m.worstCaseResponseTime.toFixed(1);
+    var m          = result.metrics;
+    var satisfies  = m.worstCaseResponseTime <= 12;
+    var badgeCls   = satisfies ? 'satisfied' : 'violated';
+    var badgeText  = satisfies ? '12-min constraint SATISFIED' : '12-min constraint VIOLATED';
+    var cov8pct    = (m.weightedCoverage8  * 100).toFixed(1);
+    var cov12pct   = (m.weightedCoverage12 * 100).toFixed(1);
+    var worstStr   = m.worstCaseResponseTime.toFixed(1);
 
-    // Build staging list items
     var siteLines = '';
     result.stagingConfig.forEach(function(siteId, idx) {
-      siteLines += '<li>A' + (idx+1) + ': ' + data.STAGING_SITES[siteId].label + '</li>';
+      siteLines += '<li>A' + (idx + 1) + ': ' + data.STAGING_SITES[siteId].label + '</li>';
     });
 
-    var html =
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-        '<strong style="font-size:1rem">Recommended deployment</strong>' +
-        '<span class="constraint-badge ' + badgeClass + '">' + badgeText + '</span>' +
+    optimalStagingCard.innerHTML =
+      '<div class="optimal-staging-header">' +
+        '<strong style="font-size:0.85rem">Recommended deployment</strong>' +
+        '<span class="constraint-badge ' + badgeCls + '">' + badgeText + '</span>' +
       '</div>' +
       '<ul class="optimal-staging-list">' + siteLines + '</ul>' +
       '<div class="optimal-coverage-stat">' +
-        'Coverage &le;8 min: <strong>' + cov8pct + '%</strong> &nbsp;|&nbsp; ' +
-        'Coverage &le;12 min: <strong>' + cov12pct + '%</strong> &nbsp;|&nbsp; ' +
+        'Coverage &le;8 min: <strong>' + cov8pct + '%</strong> &nbsp;&middot;&nbsp; ' +
+        'Coverage &le;12 min: <strong>' + cov12pct + '%</strong> &nbsp;&middot;&nbsp; ' +
         'Worst-case RT: <strong>' + worstStr + ' min</strong>' +
       '</div>' +
-      '<p class="note-text" style="margin-top:6px">' +
+      '<p class="note-text">' +
         'For ' + params.fleet + ' unit' + (params.fleet > 1 ? 's' : '') + ', ' +
         data.TIME_PERIODS[params.timePeriod].label + ', ' +
         data.ROAD_CONDITIONS[params.roadCondition].label + ' roads, ' +
         params.callsPerDay + ' calls/day.' +
-      '</p>';
+      '</p>' +
+      '<button class="btn-apply" id="apply-optimal-btn">Apply this configuration</button>';
 
-    optimalStagingCard.innerHTML = html;
+    // Wire the Apply button
+    document.getElementById('apply-optimal-btn').addEventListener('click', function() {
+      if (!APP._optimalResult) return;
+      var selects = [amb1Select, amb2Select, amb3Select, amb4Select];
+      APP._optimalResult.stagingConfig.forEach(function(siteId, idx) {
+        if (idx < selects.length) {
+          selects[idx].value = siteId;
+          if (APP.ambMarkers[idx] && STATION_COORDS[siteId]) {
+            APP.ambMarkers[idx].setLatLng(STATION_COORDS[siteId]);
+          }
+        }
+      });
+      runSimulationAndRender();
+    });
   } catch (e) {
     console.error('renderOptimalStaging error:', e);
     optimalStagingCard.innerHTML = '<p class="text-muted">Error computing optimal staging.</p>';
   }
 }
 
-// ─── SECTION 10: MAIN SIMULATION RENDER ──────────────────────────────────────
+// ─── SVG FALLBACK MAP ──────────────────────────────────────────────────────────
+function zoneColorHex(rt) {
+  if (rt === null || rt === undefined) return '#94a3b8';
+  if (rt <= 8)  return '#16a34a';
+  if (rt <= 12) return '#d97706';
+  return '#dc2626';
+}
 
-function runSimulationAndRender() {
+function renderSVGMap(metrics, stagingConfig, params) {
+  var emsMap = document.getElementById('ems-map');
+  if (!emsMap) return;
   try {
-    var params   = getScenarioParams();
-    updateFleetDropdownVisibility(params.fleet);
+    var data  = window.EMS.data;
+    var zones = data.ZONES;
+    var parts = [];
 
-    var sim      = window.EMS.simulation;
-    var metrics  = sim.computeCoverageMetrics(params.staging, params.roadCondition, params.timePeriod);
-    var avail    = sim.computeAvailability(params.fleet, params.timePeriod, params.dayType, params.callsPerDay);
+    parts.push('<rect width="1000" height="500" fill="#f8fafc"/>');
 
-    renderMetricCards(metrics, avail);
-    renderSVGMap(metrics, params.staging, params);
-    renderResponseTable(metrics);
-    renderOptimalStaging(params);
+    data.ROAD_EDGES.forEach(function(edge) {
+      var fromZ = zones[edge.from];
+      var toZ   = zones[edge.to];
+      var mx = (fromZ.mapX + toZ.mapX) / 2;
+      var my = (fromZ.mapY + toZ.mapY) / 2;
+      var angle = Math.atan2(toZ.mapY - fromZ.mapY, toZ.mapX - fromZ.mapX) * 180 / Math.PI;
+      parts.push('<line x1="' + fromZ.mapX + '" y1="' + fromZ.mapY + '" x2="' + toZ.mapX + '" y2="' + toZ.mapY + '" stroke="#94a3b8" stroke-width="2.5"/>');
+      var perp = (angle + 90) * Math.PI / 180;
+      var lx = mx + 12 * Math.cos(perp);
+      var ly = my + 12 * Math.sin(perp);
+      parts.push('<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" font-family="sans-serif" font-size="9" fill="#64748b" text-anchor="middle">' + edge.road + ' · ' + edge.minutes + ' min</text>');
+    });
+
+    var rtByZone = {};
+    if (metrics && metrics.zoneResults) {
+      metrics.zoneResults.forEach(function(zr) { rtByZone[zr.zoneId] = zr.minResponseTime; });
+    }
+
+    ZONE_ORDER.forEach(function(zoneId) {
+      var zone = zones[zoneId];
+      var rt   = rtByZone[zoneId] !== undefined ? rtByZone[zoneId] : null;
+      var r    = zone.type === 'town' ? 45 : 30;
+      var fill = zoneColorHex(rt);
+      var rtLabel = rt !== null ? rt.toFixed(1) + ' min' : '?';
+      parts.push('<circle cx="' + zone.mapX + '" cy="' + zone.mapY + '" r="' + r + '" fill="' + fill + '" stroke="#fff" stroke-width="2"/>');
+      parts.push('<text x="' + zone.mapX + '" y="' + (zone.mapY - 5) + '" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">' + rtLabel + '</text>');
+      parts.push('<text x="' + zone.mapX + '" y="' + (zone.mapY + r + 14) + '" font-family="sans-serif" font-size="10" font-weight="600" fill="#1e293b" text-anchor="middle">' + zone.label + '</text>');
+    });
+
+    Object.values(data.HOSPITALS).forEach(function(h) {
+      parts.push('<rect x="' + (h.x-13) + '" y="' + (h.y-13) + '" width="26" height="26" fill="#7c2020" stroke="#fff" stroke-width="1.5" rx="3"/>');
+      parts.push('<text x="' + h.x + '" y="' + h.y + '" font-family="sans-serif" font-size="14" font-weight="900" fill="#fff" text-anchor="middle" dominant-baseline="middle">H</text>');
+      parts.push('<text x="' + h.x + '" y="' + (h.y+22) + '" font-family="sans-serif" font-size="9" font-weight="600" fill="#7c2020" text-anchor="middle">' + h.shortLabel + '</text>');
+    });
+
+    var ambsBySite = {};
+    stagingConfig.forEach(function(siteId, idx) {
+      if (!ambsBySite[siteId]) ambsBySite[siteId] = [];
+      ambsBySite[siteId].push(idx + 1);
+    });
+    Object.keys(ambsBySite).forEach(function(siteId) {
+      var site = data.STAGING_SITES[siteId];
+      var zone = zones[site.zone];
+      var bx = zone.mapX + site.displayDx;
+      var by = zone.mapY + site.displayDy;
+      var ambNums = ambsBySite[siteId];
+      parts.push('<text x="' + bx + '" y="' + by + '" font-family="sans-serif" font-size="20" font-weight="900" fill="#1d6fb8" text-anchor="middle" dominant-baseline="middle">+</text>');
+      parts.push('<text x="' + bx + '" y="' + (by+16) + '" font-family="sans-serif" font-size="9" font-weight="700" fill="#1d6fb8" text-anchor="middle">' + ambNums.map(function(n){return 'A'+n;}).join(',') + '</text>');
+    });
+
+    emsMap.innerHTML = parts.join('\n');
   } catch (e) {
-    console.error('runSimulationAndRender error:', e);
+    console.error('renderSVGMap error:', e);
   }
 }
 
-// ─── SECTION 11: SENSITIVITY ANALYSIS RENDER ─────────────────────────────────
+// ─── LEAFLET: AMBULANCE ICON ───────────────────────────────────────────────────
+function ambIcon(num) {
+  return L.divIcon({
+    html: '<div class="amb-pin"><div class="amb-pin-inner">A' + num + '</div></div>',
+    className: '',
+    iconSize:   [30, 30],
+    iconAnchor: [15, 30],
+    popupAnchor:[0, -32]
+  });
+}
 
+// ─── LEAFLET: HOSPITAL MARKERS (static) ───────────────────────────────────────
+function addHospitalMarkers() {
+  Object.keys(HOSPITAL_COORDS).forEach(function(id) {
+    var h = HOSPITAL_COORDS[id];
+    var icon = L.divIcon({
+      html: '<div class="hosp-pin">H</div>',
+      className: '',
+      iconSize:   [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor:[0, -14]
+    });
+    L.marker(h.latlng, { icon: icon })
+      .addTo(APP.map)
+      .bindTooltip('<strong>' + h.label + '</strong><br><small>' + h.addr + '</small>', { direction: 'top' });
+  });
+}
+
+// ─── LEAFLET: INIT MAP ─────────────────────────────────────────────────────────
+function initMap() {
+  try {
+    APP.map = L.map('ems-leaflet-map', { center: MAP_CENTER, zoom: MAP_ZOOM });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(APP.map);
+    addHospitalMarkers();
+  } catch (e) {
+    console.error('Leaflet init error:', e);
+    APP.leafletOk = false;
+    document.getElementById('ems-leaflet-map').style.display = 'none';
+    document.getElementById('svg-fallback').style.display    = 'block';
+    document.getElementById('map-legend').style.display      = 'none';
+  }
+}
+
+// ─── LEAFLET: SNAP TO NEAREST STATION ──────────────────────────────────────────
+function snapToNearestStation(latLng) {
+  var minDist = Infinity;
+  var nearest = null;
+  Object.keys(STATION_COORDS).forEach(function(siteId) {
+    var d = L.latLng(STATION_COORDS[siteId]).distanceTo(latLng);
+    if (d < minDist) { minDist = d; nearest = siteId; }
+  });
+  return nearest;
+}
+
+// ─── LEAFLET: UPDATE AMBULANCE MARKERS ────────────────────────────────────────
+function updateAmbMarkers(stagingConfig) {
+  if (!APP.leafletOk) return;
+
+  // Remove old markers and rings
+  APP.ambMarkers.forEach(function(m) { m.remove(); });
+  APP.coverageRings.forEach(function(r) { r.remove(); });
+  APP.ambMarkers   = [];
+  APP.coverageRings = [];
+
+  var data    = window.EMS.data;
+  var selects = [amb1Select, amb2Select, amb3Select, amb4Select];
+
+  stagingConfig.forEach(function(siteId, idx) {
+    var coords = STATION_COORDS[siteId];
+    if (!coords) return;
+
+    // Create draggable marker
+    var marker = L.marker(coords, {
+      draggable: true,
+      icon:      ambIcon(idx + 1),
+      zIndexOffset: 1000
+    }).addTo(APP.map);
+
+    marker.bindTooltip(
+      'Ambulance ' + (idx + 1) + ': ' + data.STAGING_SITES[siteId].label,
+      { direction: 'top', offset: [0, -30] }
+    );
+
+    // Drag end: snap to nearest station
+    (function(markerRef, selectRef) {
+      markerRef.on('dragend', function(e) {
+        var nearestId = snapToNearestStation(e.target.getLatLng());
+        if (nearestId && STATION_COORDS[nearestId]) {
+          markerRef.setLatLng(STATION_COORDS[nearestId]);
+          if (selectRef) selectRef.value = nearestId;
+          runSimulationAndRender();
+        }
+      });
+    })(marker, selects[idx]);
+
+    APP.ambMarkers.push(marker);
+
+    // Coverage rings (start at radius 0, animate to target)
+    var ring8  = L.circle(coords, { radius: 1, color: '#16a34a', weight: 1.5, dashArray: '6 4', fill: true, fillColor: '#16a34a', fillOpacity: 0.04, opacity: 0.7 }).addTo(APP.map);
+    var ring12 = L.circle(coords, { radius: 1, color: '#d97706', weight: 1.5, dashArray: '6 4', fill: true, fillColor: '#d97706', fillOpacity: 0.03, opacity: 0.6 }).addTo(APP.map);
+
+    APP.coverageRings.push(ring8, ring12);
+
+    // Animate ring expand
+    (function(r8, r12) {
+      var start = null;
+      var duration = 1000;
+      var target8  = 8500;
+      var target12 = 12800;
+      function step(ts) {
+        if (!start) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var ease = 1 - Math.pow(1 - progress, 3);
+        r8.setRadius(target8  * ease);
+        r12.setRadius(target12 * ease);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    })(ring8, ring12);
+  });
+}
+
+// ─── LEAFLET: UPDATE ZONE CIRCLES ─────────────────────────────────────────────
+function updateZoneCircles(metrics) {
+  if (!APP.leafletOk) return;
+
+  // Remove old zone circles
+  Object.keys(APP.zoneCircles).forEach(function(zid) {
+    APP.zoneCircles[zid].remove();
+  });
+  APP.zoneCircles = {};
+
+  if (!metrics) return;
+
+  var rtByZone = {};
+  metrics.zoneResults.forEach(function(zr) { rtByZone[zr.zoneId] = zr; });
+
+  var data = window.EMS.data;
+
+  ZONE_ORDER.forEach(function(zoneId) {
+    var coords = ZONE_COORDS[zoneId];
+    if (!coords) return;
+
+    var zr   = rtByZone[zoneId];
+    var rt   = zr ? zr.minResponseTime : null;
+    var fill = rt === null ? '#94a3b8' : (rt <= 8 ? '#16a34a' : (rt <= 12 ? '#d97706' : '#dc2626'));
+    var zone = data.ZONES[zoneId];
+    var isCorr = zone && zone.type === 'corridor';
+    var radius = isCorr ? 1200 : 2000;
+
+    var circle = L.circle(coords, {
+      radius:      radius,
+      color:       fill,
+      weight:      1,
+      fillColor:   fill,
+      fillOpacity: 0.30,
+      stroke:      true,
+      opacity:     0.5
+    }).addTo(APP.map);
+
+    var ttText = (zone ? zone.label : zoneId) +
+      (rt !== null ? ('<br><strong>' + rt.toFixed(1) + ' min</strong>') : '');
+    circle.bindTooltip(ttText, { direction: 'top', sticky: true });
+
+    // Click → trigger animation
+    (function(zid) {
+      circle.on('click', function() {
+        if (APP.lastMetrics) triggerZoneAnimation(zid, APP.lastMetrics);
+      });
+    })(zoneId);
+
+    // Hover highlight
+    circle.on('mouseover', function() { circle.setStyle({ fillOpacity: 0.50 }); });
+    circle.on('mouseout',  function() { circle.setStyle({ fillOpacity: 0.30 }); });
+
+    APP.zoneCircles[zoneId] = circle;
+  });
+}
+
+// ─── RESPONSE ANIMATION ───────────────────────────────────────────────────────
+function triggerZoneAnimation(zoneId, metrics) {
+  var zr = null;
+  for (var i = 0; i < metrics.zoneResults.length; i++) {
+    if (metrics.zoneResults[i].zoneId === zoneId) { zr = metrics.zoneResults[i]; break; }
+  }
+  if (!zr || !zr.nearestStageSiteId) return;
+
+  var fromCoords = STATION_COORDS[zr.nearestStageSiteId];
+  var toCoords   = ZONE_COORDS[zoneId];
+  if (!fromCoords || !toCoords) return;
+
+  var durationMs = Math.min(zr.minResponseTime * 400, 8000);
+  animateResponsePath(fromCoords, toCoords, durationMs, zr.minResponseTime);
+}
+
+function animateResponsePath(fromCoords, toCoords, durationMs, responseTime) {
+  if (!APP.leafletOk) return;
+
+  // Cancel any running animation
+  if (APP.animFrameId) { cancelAnimationFrame(APP.animFrameId); APP.animFrameId = null; }
+  if (APP.animPolyline) { APP.animPolyline.remove(); APP.animPolyline = null; }
+  if (APP.animMarker)   { APP.animMarker.remove();   APP.animMarker   = null; }
+
+  // Try to get ORS route; fall back to straight line
+  function doAnimate(pathLatLngs) {
+    // Draw polyline
+    APP.animPolyline = L.polyline(pathLatLngs, {
+      color: '#0ea5e9', weight: 3, dashArray: '8 5', opacity: 0.85
+    }).addTo(APP.map);
+
+    // Create moving dot
+    var dotIcon = L.divIcon({
+      html: '<div style="width:12px;height:12px;background:#0ea5e9;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3)"></div>',
+      className: '',
+      iconSize:   [12, 12],
+      iconAnchor: [6, 6]
+    });
+    APP.animMarker = L.marker(pathLatLngs[0], { icon: dotIcon, zIndexOffset: 2000 }).addTo(APP.map);
+
+    // Build cumulative distance array for uniform speed
+    var totalDist = 0;
+    var cumDists = [0];
+    for (var i = 1; i < pathLatLngs.length; i++) {
+      var a = L.latLng(pathLatLngs[i - 1]);
+      var b = L.latLng(pathLatLngs[i]);
+      totalDist += a.distanceTo(b);
+      cumDists.push(totalDist);
+    }
+
+    var startTs = null;
+    function step(ts) {
+      if (!startTs) startTs = ts;
+      var elapsed  = ts - startTs;
+      var progress = Math.min(elapsed / durationMs, 1);
+      var targetDist = totalDist * progress;
+
+      // Find segment containing targetDist
+      var pos = pathLatLngs[pathLatLngs.length - 1]; // default: end
+      for (var j = 0; j < cumDists.length - 1; j++) {
+        if (targetDist >= cumDists[j] && targetDist <= cumDists[j + 1]) {
+          var segFrac = (cumDists[j + 1] - cumDists[j]) > 0
+            ? (targetDist - cumDists[j]) / (cumDists[j + 1] - cumDists[j])
+            : 0;
+          var la = pathLatLngs[j];
+          var lb = pathLatLngs[j + 1];
+          pos = L.latLng(
+            la.lat + (lb.lat - la.lat) * segFrac,
+            la.lng + (lb.lng - la.lng) * segFrac
+          );
+          break;
+        }
+      }
+
+      if (APP.animMarker) APP.animMarker.setLatLng(pos);
+
+      if (progress < 1) {
+        APP.animFrameId = requestAnimationFrame(step);
+      } else {
+        APP.animFrameId = null;
+        // Show popup at destination
+        if (APP.animMarker) APP.animMarker.setLatLng(pathLatLngs[pathLatLngs.length - 1]);
+        L.popup({ offset: [0, -6] })
+          .setLatLng(pathLatLngs[pathLatLngs.length - 1])
+          .setContent('<strong>Response: ' + responseTime.toFixed(1) + ' min</strong>')
+          .openOn(APP.map);
+      }
+    }
+
+    APP.animFrameId = requestAnimationFrame(step);
+  }
+
+  // Convert array coords [lat,lng] to L.latLng objects
+  function toLatLngs(coords) {
+    return coords.map(function(c) { return L.latLng(c[0], c[1]); });
+  }
+
+  // Try ORS route
+  if (window.EMS && window.EMS.api && window.EMS.api.getRoute) {
+    window.EMS.api.getRoute(fromCoords[0], fromCoords[1], toCoords[0], toCoords[1]).then(function(result) {
+      if (result && result.coordinates && result.coordinates.length > 1) {
+        // ORS returns [lng, lat] — swap to [lat, lng] for Leaflet
+        var latLngs = result.coordinates.map(function(c) { return L.latLng(c[1], c[0]); });
+        doAnimate(latLngs);
+      } else {
+        doAnimate(toLatLngs([fromCoords, toCoords]));
+      }
+    }).catch(function() {
+      doAnimate(toLatLngs([fromCoords, toCoords]));
+    });
+  } else {
+    doAnimate(toLatLngs([fromCoords, toCoords]));
+  }
+}
+
+// ─── AI PANEL ─────────────────────────────────────────────────────────────────
+function initAIPanel() {
+  if (!window.EMS || !window.EMS.api) return;
+  window.EMS.api.checkHealth().then(function(ok) {
+    if (ok) {
+      document.getElementById('ai-panel').style.display      = '';
+      document.getElementById('ai-panel-card').style.display = '';
+    }
+  }).catch(function() {});
+}
+
+function buildAnalysisPayload() {
+  if (!APP.lastMetrics || !APP.lastParams) return {};
+  var avail = window.EMS.simulation.computeAvailability(
+    APP.lastParams.fleet, APP.lastParams.timePeriod, APP.lastParams.dayType, APP.lastParams.callsPerDay
+  );
+  return {
+    params: APP.lastParams,
+    metrics: {
+      weightedCoverage8:     APP.lastMetrics.weightedCoverage8,
+      weightedCoverage12:    APP.lastMetrics.weightedCoverage12,
+      averageResponseTime:   APP.lastMetrics.averageResponseTime,
+      worstCaseResponseTime: APP.lastMetrics.worstCaseResponseTime,
+      totalWeightedDemand:   APP.lastMetrics.totalWeightedDemand,
+      availability:          avail,
+      zoneResults:           APP.lastMetrics.zoneResults
+    }
+  };
+}
+
+function triggerAI(mode) {
+  try {
+    if (!window.EMS || !window.EMS.api || !APP.lastMetrics) return;
+    APP._aiMode = mode;
+
+    // Update active button state
+    document.querySelectorAll('.ai-mode-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+    });
+
+    var resultEl     = document.getElementById('ai-result');
+    var mainBodyEl   = document.getElementById('ai-panel-main-body');
+    resultEl.style.display     = '';
+    mainBodyEl.style.display   = '';
+    resultEl.innerHTML =
+      '<div class="skeleton-bar"></div>' +
+      '<div class="skeleton-bar"></div>' +
+      '<div class="skeleton-bar"></div>';
+
+    window.EMS.api.analyze(mode, buildAnalysisPayload()).then(function(text) {
+      resultEl.innerHTML =
+        '<p>' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>' +
+        '<button class="btn-copy" onclick="(function(){var txt=this.previousSibling.textContent;navigator.clipboard&&navigator.clipboard.writeText(txt)}).call(this)">Copy</button>';
+      mainBodyEl.innerHTML = resultEl.outerHTML;
+      mainBodyEl.style.display = '';
+    }).catch(function() {
+      resultEl.innerHTML = '<p class="ai-error">AI analysis unavailable. Check backend connection.</p>';
+    });
+  } catch (e) {
+    console.error('triggerAI error:', e);
+  }
+}
+
+// ─── SENSITIVITY ANALYSIS ─────────────────────────────────────────────────────
 function runSensitivityAndRender() {
   try {
-    var params  = getScenarioParams();
-    var sim     = window.EMS.simulation;
-    var data    = window.EMS.data;
+    var params   = getScenarioParams();
+    var sim      = window.EMS.simulation;
     var paramKey = sensitivityParamSel.value;
 
     var result = sim.runSensitivityAnalysis(
@@ -662,7 +1018,6 @@ function runSensitivityAndRender() {
     );
     if (!result) return;
 
-    // Update heading
     var paramLabels = {
       fleetSize:      'Fleet Size',
       roadConditions: 'Road Conditions',
@@ -671,15 +1026,13 @@ function runSensitivityAndRender() {
     };
     sensitivityHeading.textContent = 'Sensitivity Analysis — ' + (paramLabels[paramKey] || paramKey);
 
-    // Destroy previous chart instance to prevent "canvas already in use" error
-    if (sensitivityChart) {
-      sensitivityChart.destroy();
-      sensitivityChart = null;
+    if (APP.sensitivityChart) {
+      APP.sensitivityChart.destroy();
+      APP.sensitivityChart = null;
     }
 
     var ctx = sensitivityChartCanvas.getContext('2d');
-
-    sensitivityChart = new Chart(ctx, {
+    APP.sensitivityChart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: result.labels,
@@ -687,17 +1040,17 @@ function runSensitivityAndRender() {
           {
             label: result.yLabel,
             data:  result.coverage8Data,
-            backgroundColor: 'rgba(29, 111, 184, 0.75)',
-            borderColor:     'rgba(29, 111, 184, 1)',
+            backgroundColor: 'rgba(14, 165, 233, 0.70)',
+            borderColor:     'rgba(14, 165, 233, 1)',
             borderWidth: 1,
             yAxisID: 'y'
           },
           {
             label: result.y1Label,
             data:  result.worstCaseData,
-            type: 'line',
+            type:  'line',
             borderColor:     'rgba(220, 38, 38, 0.9)',
-            backgroundColor: 'rgba(220, 38, 38, 0.15)',
+            backgroundColor: 'rgba(220, 38, 38, 0.12)',
             borderWidth: 2,
             pointRadius: 4,
             pointBackgroundColor: 'rgba(220, 38, 38, 0.9)',
@@ -711,29 +1064,22 @@ function runSensitivityAndRender() {
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 } } },
+          legend:  { position: 'top',  labels:  { font: { size: 11 } } },
           tooltip: { bodyFont: { size: 11 }, titleFont: { size: 11 } }
         },
         scales: {
           y: {
-            type: 'linear',
-            position: 'left',
-            min: 0,
-            max: 100,
-            title: { display: true, text: result.yLabel, font: { size: 10 } },
+            type: 'linear', position: 'left', min: 0, max: 100,
+            title: { display: true, text: result.yLabel,  font: { size: 10 } },
             ticks: { font: { size: 10 } }
           },
           y1: {
-            type: 'linear',
-            position: 'right',
-            min: 0,
+            type: 'linear', position: 'right', min: 0,
             title: { display: true, text: result.y1Label, font: { size: 10 } },
             ticks: { font: { size: 10 } },
-            grid: { drawOnChartArea: false }
+            grid:  { drawOnChartArea: false }
           },
-          x: {
-            ticks: { font: { size: 10 } }
-          }
+          x: { ticks: { font: { size: 10 } } }
         }
       }
     });
@@ -745,8 +1091,43 @@ function runSensitivityAndRender() {
   }
 }
 
-// ─── SECTION 12: EVENT LISTENERS ─────────────────────────────────────────────
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────────
+function runSimulationAndRender() {
+  try {
+    var params  = getScenarioParams();
+    updateFleetDropdownVisibility(params.fleet);
 
+    var sim     = window.EMS.simulation;
+    var metrics = sim.computeCoverageMetrics(params.staging, params.roadCondition, params.timePeriod);
+    var avail   = sim.computeAvailability(params.fleet, params.timePeriod, params.dayType, params.callsPerDay);
+
+    APP.lastMetrics = metrics;
+    APP.lastParams  = params;
+
+    renderMetricCards(metrics, avail);
+    renderResponseTable(metrics);
+    renderOptimalStaging(params);
+
+    if (APP.leafletOk) {
+      updateAmbMarkers(params.staging);
+      updateZoneCircles(metrics);
+    } else {
+      renderSVGMap(metrics, params.staging, params);
+    }
+
+    // Auto-trigger AI on first run (only if panel is visible)
+    if (APP._firstRun) {
+      APP._firstRun = false;
+      if (document.getElementById('ai-panel').style.display !== 'none') {
+        triggerAI('interpret');
+      }
+    }
+  } catch (e) {
+    console.error('runSimulationAndRender error:', e);
+  }
+}
+
+// ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
 fleetSlider.addEventListener('input', function() {
   fleetDisplay.textContent = fleetSlider.value;
   runSimulationAndRender();
@@ -774,16 +1155,47 @@ findOptimalBtn.addEventListener('click', function() {
     });
     runSimulationAndRender();
   } catch (e) {
-    console.error('findOptimalBtn click error:', e);
+    console.error('findOptimalBtn error:', e);
   }
+});
+
+simulateResponseBtn.addEventListener('click', function() {
+  if (!APP.lastMetrics) return;
+  // Animate to all zones sequentially via nearest ambulance
+  ZONE_ORDER.forEach(function(zoneId, idx) {
+    setTimeout(function() {
+      triggerZoneAnimation(zoneId, APP.lastMetrics);
+    }, idx * 600);
+  });
 });
 
 runSensitivityBtn.addEventListener('click', runSensitivityAndRender);
 
-// ─── SECTION 13: INITIALIZATION ──────────────────────────────────────────────
+document.getElementById('sensitivity-clear-btn').addEventListener('click', function() {
+  sensitivityCard.classList.remove('visible');
+});
 
-(function init() {
-  // Set default values per spec
+document.getElementById('map-reset-btn').addEventListener('click', function() {
+  if (APP.map) APP.map.setView(MAP_CENTER, MAP_ZOOM);
+});
+
+// AI mode buttons
+document.querySelectorAll('.ai-mode-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    triggerAI(btn.getAttribute('data-mode'));
+  });
+});
+
+document.getElementById('ai-analyze-btn').addEventListener('click', function() {
+  triggerAI(APP._aiMode);
+});
+
+// ─── INITIALIZATION ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Leaflet map
+  initMap();
+
+  // Set default control values
   fleetSlider.value         = '2';
   amb1Select.value          = 'norton_rescue';
   amb2Select.value          = 'bsg_rescue';
@@ -792,10 +1204,15 @@ runSensitivityBtn.addEventListener('click', runSensitivityAndRender);
   callVolumeSelect.value    = '24.5';
   dayTypeSelect.value       = 'weekday';
 
-  // Show correct number of dropdowns and run initial simulation
+  // Show correct number of dropdowns
   updateFleetDropdownVisibility(2);
+
+  // Run initial simulation
   runSimulationAndRender();
-})();
+
+  // Check backend health (async — never blocks simulation)
+  initAIPanel();
+});
 </script>
 
 </body>

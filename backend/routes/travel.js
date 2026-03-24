@@ -42,6 +42,9 @@ let cache = {
   retrievedAt: null    // Date.now() timestamp when cache was last populated
 };
 
+// Per-route cache: key = "lat,lng->lat,lng", value = { data, ts }
+let routeCache = {};
+
 /**
  * Returns true if the cache is valid (populated and not expired).
  */
@@ -135,6 +138,61 @@ router.get('/status', (req, res) => {
   } catch (err) {
     console.error('GET /travel/status error:', err);
     res.status(500).json({ error: 'Failed to get travel status: ' + err.message });
+  }
+});
+
+// GET /api/travel/route?from_lat=X&from_lng=Y&to_lat=A&to_lng=B
+// Calls ORS Directions API and returns real road geometry.
+// Caches each origin-destination pair in memory for 24 hours.
+// Returns { coordinates: [[lng,lat],...], durationMinutes, distanceKm }
+router.get('/route', async (req, res) => {
+  try {
+    const { from_lat, from_lng, to_lat, to_lng } = req.query;
+
+    if (!from_lat || !from_lng || !to_lat || !to_lng) {
+      return res.status(400).json({ error: 'from_lat, from_lng, to_lat, to_lng are required' });
+    }
+
+    if (!process.env.ORS_API_KEY) {
+      return res.status(500).json({ error: 'ORS_API_KEY is not configured. Set it in backend/.env.' });
+    }
+
+    const cacheKey = `${from_lat},${from_lng}->${to_lat},${to_lng}`;
+    if (routeCache[cacheKey] && (Date.now() - routeCache[cacheKey].ts) < CACHE_TTL_MS) {
+      return res.json(routeCache[cacheKey].data);
+    }
+
+    // ORS Directions uses longitude,latitude order (note the swap)
+    const url =
+      'https://api.openrouteservice.org/v2/directions/driving-car' +
+      '?start=' + from_lng + ',' + from_lat +
+      '&end='   + to_lng   + ',' + to_lat;
+
+    const response = await fetch(url, {
+      headers: { 'Authorization': process.env.ORS_API_KEY }
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error('ORS API error ' + response.status + ': ' + text);
+    }
+
+    const data    = await response.json();
+    const feature = data.features && data.features[0];
+    const coords  = (feature && feature.geometry && feature.geometry.coordinates) || [];
+    const summary = (feature && feature.properties && feature.properties.summary)  || {};
+
+    const result = {
+      coordinates:     coords,                               // [[lng, lat], ...]
+      durationMinutes: (summary.duration || 0) / 60,
+      distanceKm:      (summary.distance || 0) / 1000
+    };
+
+    routeCache[cacheKey] = { data: result, ts: Date.now() };
+    res.json(result);
+  } catch (err) {
+    console.error('GET /travel/route error:', err);
+    res.status(500).json({ error: 'Failed to get route: ' + err.message });
   }
 });
 
