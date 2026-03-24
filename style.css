@@ -1,0 +1,525 @@
+/* ============================================================
+   style.css — Wise County EMS Simulation
+   Flat professional design for competition judges panel.
+   All colors, spacing, and typography via CSS custom properties.
+   No gradients, no box-shadows, no decorative effects.
+   Minimum supported width: 1024px.
+   ============================================================ */
+
+/* ─── CSS CUSTOM PROPERTIES ─────────────────────────────── */
+:root {
+  /* Status colors */
+  --color-green:       #2d8a4e;
+  --color-green-tint:  #e8f5ee;
+  --color-green-text:  #1a5c34;
+  --color-amber:       #d97706;
+  --color-amber-tint:  #fef3cd;
+  --color-amber-text:  #92530a;
+  --color-red:         #dc2626;
+  --color-red-tint:    #fde8e8;
+  --color-red-text:    #991b1b;
+
+  /* Brand / UI colors */
+  --color-blue:        #1d6fb8;
+  --color-blue-tint:   #dbeafe;
+  --color-hosp:        #7c2020;
+
+  /* Layout surfaces */
+  --color-panel-bg:    #f0f2f5;
+  --color-card-bg:     #ffffff;
+  --color-page-bg:     #f8fafc;
+  --color-border:      #e2e8f0;
+  --color-border-dark: #cbd5e1;
+  --color-divider:     #e2e8f0;
+
+  /* Text */
+  --color-text:        #1e293b;
+  --color-text-muted:  #64748b;
+  --color-text-light:  #94a3b8;
+  --color-heading:     #0f172a;
+
+  /* Header accent */
+  --color-header-bg:   #0f172a;
+  --color-header-text: #f1f5f9;
+
+  /* Spacing */
+  --spacing-xs:        4px;
+  --spacing-sm:        8px;
+  --spacing-md:        16px;
+  --spacing-lg:        24px;
+  --spacing-xl:        32px;
+
+  /* Font sizes */
+  --font-size-xs:      0.65rem;
+  --font-size-sm:      0.75rem;
+  --font-size-base:    0.875rem;
+  --font-size-lg:      1rem;
+  --font-size-xl:      1.25rem;
+  --font-size-2xl:     1.75rem;
+  --font-size-3xl:     2.25rem;
+
+  /* Border radius */
+  --radius-sm:         4px;
+  --radius-md:         6px;
+  --radius-lg:         8px;
+  --radius-pill:       12px;
+}
+
+/* ─── RESET & BASE ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background: var(--color-page-bg);
+  line-height: 1.5;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+.app-header {
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-md);
+  border-bottom: 3px solid var(--color-blue);
+}
+
+.app-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.app-header .subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+/* ─── APP LAYOUT ─────────────────────────────────────────── */
+.app-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: calc(100vh - 44px);
+  align-items: start;
+}
+
+/* ─── LEFT PANEL ─────────────────────────────────────────── */
+.left-panel {
+  background: var(--color-panel-bg);
+  border-right: 1px solid var(--color-border-dark);
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 44px);
+}
+
+/* ─── RIGHT PANEL ────────────────────────────────────────── */
+.right-panel {
+  background: var(--color-card-bg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* ─── SECTION ────────────────────────────────────────────── */
+.section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.section:first-child {
+  padding-top: 0;
+}
+
+.section-heading {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+/* ─── FORM CONTROLS ──────────────────────────────────────── */
+.control-row {
+  margin-bottom: var(--spacing-sm);
+}
+
+.control-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.control-label span {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: var(--spacing-xs);
+}
+
+select, input[type="range"] {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+select {
+  padding: 5px var(--spacing-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-bg);
+  cursor: pointer;
+  height: 32px;
+}
+
+select:focus {
+  outline: 2px solid var(--color-blue);
+  outline-offset: 1px;
+}
+
+input[type="range"] {
+  accent-color: var(--color-blue);
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.fleet-display {
+  display: inline-block;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-blue);
+  min-width: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.fleet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.fleet-row input[type="range"] {
+  flex: 1;
+}
+
+/* Ambulance staging slot wrappers */
+.amb-slot-wrapper {
+  margin-bottom: var(--spacing-xs);
+}
+
+.amb-slot-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  display: block;
+}
+
+/* ─── BUTTONS ────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 6px var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-primary {
+  background: var(--color-blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #1659a0;
+}
+
+.btn-secondary {
+  background: var(--color-header-bg);
+  color: var(--color-header-text);
+  margin-top: var(--spacing-xs);
+}
+
+.btn-secondary:hover {
+  background: #1e293b;
+}
+
+/* ─── RIGHT PANEL SECTION HEADINGS ──────────────────────── */
+.panel-heading {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-heading);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.results-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ─── METRIC CARDS ───────────────────────────────────────── */
+.metric-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.metric-card {
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  text-align: center;
+  background: var(--color-panel-bg);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  min-width: 0;
+}
+
+.metric-card.green {
+  background: var(--color-green-tint);
+  border-color: var(--color-green);
+}
+
+.metric-card.amber {
+  background: var(--color-amber-tint);
+  border-color: var(--color-amber);
+}
+
+.metric-card.red {
+  background: var(--color-red-tint);
+  border-color: var(--color-red);
+}
+
+.metric-value {
+  display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.metric-card.green  .metric-value { color: var(--color-green-text); }
+.metric-card.amber  .metric-value { color: var(--color-amber-text); }
+.metric-card.red    .metric-value { color: var(--color-red-text);   }
+
+.metric-unit {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metric-title {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: var(--spacing-xs);
+  line-height: 1.3;
+}
+
+/* ─── SVG MAP CARD ───────────────────────────────────────── */
+.svg-map-card {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+}
+
+.svg-map-card svg {
+  display: block;
+  width: 100%;
+  min-width: 500px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── RESPONSE TABLE ─────────────────────────────────────── */
+.response-table-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.response-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-base);
+}
+
+.response-table th {
+  text-align: left;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-border-dark);
+  background: var(--color-panel-bg);
+}
+
+.response-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.response-table tbody tr:nth-child(even) td {
+  background: #fafbfc;
+}
+
+.response-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status pill badges */
+.status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-pill.pass {
+  background: var(--color-green-tint);
+  color: var(--color-green-text);
+  border: 1px solid var(--color-green);
+}
+
+.status-pill.warning {
+  background: var(--color-amber-tint);
+  color: var(--color-amber-text);
+  border: 1px solid var(--color-amber);
+}
+
+.status-pill.fail {
+  background: var(--color-red-tint);
+  color: var(--color-red-text);
+  border: 1px solid var(--color-red);
+}
+
+/* ─── SENSITIVITY CHART CARD ─────────────────────────────── */
+.sensitivity-chart-card {
+  display: none;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.sensitivity-chart-card.visible {
+  display: block;
+}
+
+.sensitivity-chart-wrap {
+  position: relative;
+  height: 280px;
+}
+
+.sensitivity-interpretation {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-blue-tint);
+  border-left: 3px solid var(--color-blue);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* ─── OPTIMAL STAGING CARD ───────────────────────────────── */
+.optimal-staging-card {
+  background: var(--color-panel-bg);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.optimal-staging-card .constraint-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin-left: var(--spacing-sm);
+  vertical-align: middle;
+}
+
+.optimal-staging-card .constraint-badge.satisfied {
+  background: var(--color-green-tint);
+  color: var(--color-green-text);
+  border: 1px solid var(--color-green);
+}
+
+.optimal-staging-card .constraint-badge.violated {
+  background: var(--color-red-tint);
+  color: var(--color-red-text);
+  border: 1px solid var(--color-red);
+}
+
+.optimal-staging-list {
+  list-style: none;
+  margin-top: var(--spacing-sm);
+}
+
+.optimal-staging-list li {
+  padding: 3px 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+}
+
+.optimal-staging-list li::before {
+  content: '+ ';
+  color: var(--color-blue);
+  font-weight: 700;
+}
+
+.optimal-coverage-stat {
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+.optimal-coverage-stat strong {
+  color: var(--color-text);
+}
+
+/* ─── UTILITY ────────────────────────────────────────────── */
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.note-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin-top: var(--spacing-xs);
+  font-style: italic;
+}

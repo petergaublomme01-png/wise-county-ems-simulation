@@ -1,0 +1,22 @@
+{
+  "name": "wise-county-ems-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Wise County EMS Simulation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "pdfkit": "^0.14.0",
+    "sqlite3": "latest"
+  }
+}

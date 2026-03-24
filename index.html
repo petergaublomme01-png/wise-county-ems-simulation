@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wise County EMS Deployment Simulation</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js 4.4.1 UMD build — only permitted external dependency -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════ -->
+<header class="app-header">
+  <h1>Wise County EMS Deployment Simulation</h1>
+  <span class="subtitle">Wise County, Virginia &mdash; UVA Wise Modeling Competition Spring 2026</span>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════
+     APP LAYOUT
+═══════════════════════════════════════════════════════════ -->
+<div class="app-layout">
+
+  <!-- ─── LEFT PANEL ───────────────────────────────────── -->
+  <div class="left-panel">
+
+    <!-- Section 1: Fleet Configuration -->
+    <div class="section">
+      <div class="section-heading">Fleet Configuration</div>
+
+      <div class="control-row">
+        <label class="control-label">
+          Ambulances <span id="fleet-display" class="fleet-display">2</span>
+        </label>
+        <div class="fleet-row">
+          <input type="range" id="fleet-slider" min="1" max="4" value="2" step="1">
+        </div>
+      </div>
+
+      <div class="control-row" id="amb-slot-1">
+        <span class="amb-slot-label">Ambulance 1 staging</span>
+        <select id="amb-1-select">
+          <option value="norton_rescue">Norton Rescue Squad</option>
+          <option value="norton_fire">Norton Fire Station 1</option>
+          <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
+          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="wise_rescue">Wise Rescue Squad</option>
+          <option value="wise_fire">Wise Fire Department</option>
+        </select>
+      </div>
+
+      <div class="control-row amb-slot-wrapper" id="amb-slot-2">
+        <span class="amb-slot-label">Ambulance 2 staging</span>
+        <select id="amb-2-select">
+          <option value="norton_rescue">Norton Rescue Squad</option>
+          <option value="norton_fire">Norton Fire Station 1</option>
+          <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
+          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="wise_rescue">Wise Rescue Squad</option>
+          <option value="wise_fire">Wise Fire Department</option>
+        </select>
+      </div>
+
+      <div class="control-row amb-slot-wrapper" id="amb-slot-3" style="display:none">
+        <span class="amb-slot-label">Ambulance 3 staging</span>
+        <select id="amb-3-select">
+          <option value="norton_rescue">Norton Rescue Squad</option>
+          <option value="norton_fire">Norton Fire Station 1</option>
+          <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
+          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="wise_rescue">Wise Rescue Squad</option>
+          <option value="wise_fire">Wise Fire Department</option>
+        </select>
+      </div>
+
+      <div class="control-row amb-slot-wrapper" id="amb-slot-4" style="display:none">
+        <span class="amb-slot-label">Ambulance 4 staging</span>
+        <select id="amb-4-select">
+          <option value="norton_rescue">Norton Rescue Squad</option>
+          <option value="norton_fire">Norton Fire Station 1</option>
+          <option value="bsg_rescue">Big Stone Gap Rescue Squad</option>
+          <option value="bsg_fire">Big Stone Gap Fire Department</option>
+          <option value="wise_rescue">Wise Rescue Squad</option>
+          <option value="wise_fire">Wise Fire Department</option>
+        </select>
+      </div>
+
+      <div class="control-row" style="margin-top:12px">
+        <button class="btn btn-primary" id="find-optimal-btn">Find optimal staging</button>
+      </div>
+    </div>
+
+    <!-- Section 2: Scenario Parameters -->
+    <div class="section">
+      <div class="section-heading">Scenario Parameters</div>
+
+      <div class="control-row">
+        <label class="control-label" for="time-period-select">Time period</label>
+        <select id="time-period-select">
+          <option value="morning">Morning 6am–12pm</option>
+          <option value="afternoon">Afternoon 12pm–6pm</option>
+          <option value="evening">Evening 6pm–10pm</option>
+          <option value="overnight">Overnight 10pm–6am</option>
+        </select>
+      </div>
+
+      <div class="control-row">
+        <label class="control-label" for="road-condition-select">Road conditions</label>
+        <select id="road-condition-select">
+          <option value="normal">Normal</option>
+          <option value="peak">Peak traffic</option>
+          <option value="rain">Heavy rain</option>
+          <option value="snow">Snow / ice</option>
+          <option value="fog">Dense fog</option>
+        </select>
+      </div>
+
+      <div class="control-row">
+        <label class="control-label" for="call-volume-select">Call volume</label>
+        <select id="call-volume-select">
+          <option value="15">Low — 15 per day</option>
+          <option value="24.5" selected>Average — 24.5 per day</option>
+          <option value="35">High surge — 35 per day</option>
+        </select>
+      </div>
+
+      <div class="control-row">
+        <label class="control-label" for="day-type-select">Day type</label>
+        <select id="day-type-select">
+          <option value="weekday">Weekday</option>
+          <option value="weekend">Weekend</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Section 3: Sensitivity Analysis -->
+    <div class="section">
+      <div class="section-heading">Sensitivity Analysis</div>
+      <div class="control-row">
+        <label class="control-label" for="sensitivity-param-select">Parameter to vary</label>
+        <select id="sensitivity-param-select">
+          <option value="fleetSize">Fleet size</option>
+          <option value="roadConditions">Road conditions</option>
+          <option value="callVolume">Call volume</option>
+          <option value="timeOfDay">Time of day</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <button class="btn btn-secondary" id="run-sensitivity-btn">Run sensitivity analysis</button>
+      </div>
+    </div>
+
+  </div><!-- end left-panel -->
+
+  <!-- ─── RIGHT PANEL ──────────────────────────────────── -->
+  <div class="right-panel">
+
+    <!-- Section 1: Metric Cards -->
+    <div class="results-section">
+      <div class="panel-heading">Performance Metrics</div>
+      <div class="metric-cards">
+        <div class="metric-card" id="card-cov8">
+          <span class="metric-value" id="val-cov8">—</span>
+          <span class="metric-unit">%</span>
+          <span class="metric-title">Coverage &le;8 min</span>
+        </div>
+        <div class="metric-card" id="card-cov12">
+          <span class="metric-value" id="val-cov12">—</span>
+          <span class="metric-unit">%</span>
+          <span class="metric-title">Coverage &le;12 min</span>
+        </div>
+        <div class="metric-card" id="card-avgrt">
+          <span class="metric-value" id="val-avgrt">—</span>
+          <span class="metric-unit">min avg</span>
+          <span class="metric-title">Avg response time</span>
+        </div>
+        <div class="metric-card" id="card-wrstrt">
+          <span class="metric-value" id="val-wrstrt">—</span>
+          <span class="metric-unit">min worst</span>
+          <span class="metric-title">Worst-case RT</span>
+        </div>
+        <div class="metric-card" id="card-avail">
+          <span class="metric-value" id="val-avail">—</span>
+          <span class="metric-unit">% avail</span>
+          <span class="metric-title">Unit availability</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: SVG Map -->
+    <div class="results-section">
+      <div class="panel-heading">Zone Coverage Map</div>
+      <div class="svg-map-card">
+        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+          <!-- Populated by inline script -->
+        </svg>
+      </div>
+    </div>
+
+    <!-- Section 3: Response Time Breakdown Table -->
+    <div class="results-section response-table-section">
+      <div class="panel-heading">Response Time Breakdown</div>
+      <table class="response-table" id="response-table">
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>Population</th>
+            <th>Nearest station</th>
+            <th>Response time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="response-table-body">
+          <!-- Populated by inline script -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 4: Sensitivity Chart (hidden until analysis runs) -->
+    <div class="results-section sensitivity-chart-card" id="sensitivity-card">
+      <div class="panel-heading" id="sensitivity-heading">Sensitivity Analysis</div>
+      <div class="sensitivity-chart-wrap">
+        <canvas id="sensitivity-chart"></canvas>
+      </div>
+      <div class="sensitivity-interpretation" id="sensitivity-interpretation"></div>
+    </div>
+
+    <!-- Section 5: Optimal Staging Recommendation -->
+    <div class="results-section">
+      <div class="panel-heading">Optimal Staging Recommendation</div>
+      <div class="optimal-staging-card" id="optimal-staging-card">
+        <!-- Populated by inline script -->
+      </div>
+    </div>
+
+  </div><!-- end right-panel -->
+
+</div><!-- end app-layout -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS — order matters: data.js, simulation.js, then inline
+═══════════════════════════════════════════════════════════ -->
+<script src="data.js"></script>
+<script src="simulation.js"></script>
+<script src="api.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+// INLINE SCRIPT — Wise County EMS Simulation
+// Depends on: window.EMS.data (data.js) and window.EMS.simulation (simulation.js)
+// ════════════════════════════════════════════════════════════
+
+// ─── SECTION 1: CONSTANTS & STATE ────────────────────────────────────────────
+
+var COLOR = {
+  green:  '#2d8a4e',
+  amber:  '#d97706',
+  red:    '#dc2626',
+  blue:   '#1d6fb8',
+  hosp:   '#7c2020',
+  white:  '#ffffff',
+  darkBg: '#1e293b',
+  zoneBg: '#f0f4f8'
+};
+
+// West-to-east zone order
+var ZONE_ORDER = ['bsg', 'norton_bsg_corridor', 'norton', 'wise_norton_corridor', 'wise'];
+
+// Chart.js instance — must be destroyed before recreating to avoid "canvas in use" error
+var sensitivityChart = null;
+
+// ─── SECTION 2: DOM REFERENCES ───────────────────────────────────────────────
+
+var fleetSlider          = document.getElementById('fleet-slider');
+var fleetDisplay         = document.getElementById('fleet-display');
+var amb1Select           = document.getElementById('amb-1-select');
+var amb2Select           = document.getElementById('amb-2-select');
+var amb3Select           = document.getElementById('amb-3-select');
+var amb4Select           = document.getElementById('amb-4-select');
+var timePeriodSelect     = document.getElementById('time-period-select');
+var roadConditionSelect  = document.getElementById('road-condition-select');
+var callVolumeSelect     = document.getElementById('call-volume-select');
+var dayTypeSelect        = document.getElementById('day-type-select');
+var sensitivityParamSel  = document.getElementById('sensitivity-param-select');
+var findOptimalBtn       = document.getElementById('find-optimal-btn');
+var runSensitivityBtn    = document.getElementById('run-sensitivity-btn');
+var emsMap               = document.getElementById('ems-map');
+var responseTableBody    = document.getElementById('response-table-body');
+var optimalStagingCard   = document.getElementById('optimal-staging-card');
+var sensitivityCard      = document.getElementById('sensitivity-card');
+var sensitivityChartCanvas = document.getElementById('sensitivity-chart');
+var sensitivityInterpEl  = document.getElementById('sensitivity-interpretation');
+var sensitivityHeading   = document.getElementById('sensitivity-heading');
+
+// Metric card elements
+var cardCov8   = document.getElementById('card-cov8');
+var cardCov12  = document.getElementById('card-cov12');
+var cardAvgRT  = document.getElementById('card-avgrt');
+var cardWrstRT = document.getElementById('card-wrstrt');
+var cardAvail  = document.getElementById('card-avail');
+var valCov8    = document.getElementById('val-cov8');
+var valCov12   = document.getElementById('val-cov12');
+var valAvgRT   = document.getElementById('val-avgrt');
+var valWrstRT  = document.getElementById('val-wrstrt');
+var valAvail   = document.getElementById('val-avail');
+
+// ─── SECTION 3: GET SCENARIO PARAMS ──────────────────────────────────────────
+
+function getScenarioParams() {
+  var fleet = parseInt(fleetSlider.value, 10);
+  var allSelects = [amb1Select, amb2Select, amb3Select, amb4Select];
+  var staging = allSelects.slice(0, fleet).map(function(s) { return s.value; });
+  return {
+    fleet:        fleet,
+    staging:      staging,
+    timePeriod:   timePeriodSelect.value,
+    roadCondition: roadConditionSelect.value,
+    callsPerDay:  parseFloat(callVolumeSelect.value),
+    dayType:      dayTypeSelect.value
+  };
+}
+
+// ─── SECTION 4: FLEET DROPDOWN VISIBILITY ────────────────────────────────────
+
+function updateFleetDropdownVisibility(fleet) {
+  fleetDisplay.textContent = fleet;
+  // Slots 2, 3, 4 are conditionally shown; slot 1 is always visible
+  var slotIds = ['amb-slot-2', 'amb-slot-3', 'amb-slot-4'];
+  slotIds.forEach(function(id, idx) {
+    var el = document.getElementById(id);
+    el.style.display = (idx + 2 <= fleet) ? '' : 'none';
+  });
+}
+
+// ─── SECTION 5: RENDER METRIC CARDS ──────────────────────────────────────────
+
+function colorClass(value, greenThreshold, amberThreshold, inverted) {
+  // inverted=false: higher is better (coverage%)
+  // inverted=true: lower is better (response time)
+  if (!inverted) {
+    if (value >= greenThreshold) return 'green';
+    if (value >= amberThreshold) return 'amber';
+    return 'red';
+  } else {
+    if (value <= greenThreshold) return 'green';
+    if (value <= amberThreshold) return 'amber';
+    return 'red';
+  }
+}
+
+function setCard(cardEl, valueEl, displayText, cls) {
+  cardEl.className = 'metric-card ' + cls;
+  valueEl.textContent = displayText;
+}
+
+function renderMetricCards(metrics, availability) {
+  if (!metrics) return;
+
+  var cov8Pct  = metrics.weightedCoverage8 * 100;
+  var cov12Pct = metrics.weightedCoverage12 * 100;
+  var avgRT    = metrics.averageResponseTime;
+  var worstRT  = metrics.worstCaseResponseTime;
+  var availPct = availability * 100;
+
+  setCard(cardCov8,   valCov8,   cov8Pct.toFixed(1),  colorClass(cov8Pct,  80, 60, false));
+  setCard(cardCov12,  valCov12,  cov12Pct.toFixed(1), colorClass(cov12Pct, 95, 80, false));
+  setCard(cardAvgRT,  valAvgRT,  avgRT.toFixed(1),    colorClass(avgRT,    8,  12, true));
+  setCard(cardWrstRT, valWrstRT, worstRT.toFixed(1),  colorClass(worstRT,  8,  12, true));
+  setCard(cardAvail,  valAvail,  availPct.toFixed(1), colorClass(availPct, 80, 60, false));
+}
+
+// ─── SECTION 6: BUILD SVG CONTENT ────────────────────────────────────────────
+
+function zoneColor(rt) {
+  if (rt <= 8)  return COLOR.green;
+  if (rt <= 12) return COLOR.amber;
+  return COLOR.red;
+}
+
+function buildSVGContent(metrics, stagingConfig, params) {
+  try {
+    var data  = window.EMS.data;
+    var zones = data.ZONES;
+    var parts = [];
+
+    // Background
+    parts.push('<rect width="1000" height="500" fill="#ffffff"/>');
+
+    // ── Road edges (drawn first, behind everything) ───────────────────────
+    data.ROAD_EDGES.forEach(function(edge) {
+      var fromZ = zones[edge.from];
+      var toZ   = zones[edge.to];
+      var mx    = (fromZ.mapX + toZ.mapX) / 2;
+      var my    = (fromZ.mapY + toZ.mapY) / 2;
+      var angle = Math.atan2(toZ.mapY - fromZ.mapY, toZ.mapX - fromZ.mapX) * 180 / Math.PI;
+
+      parts.push(
+        '<line x1="' + fromZ.mapX + '" y1="' + fromZ.mapY + '"' +
+        ' x2="' + toZ.mapX + '" y2="' + toZ.mapY + '"' +
+        ' stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="none"/>'
+      );
+
+      // Road label — slightly offset perpendicular to the line
+      var perp = angle + 90;
+      var perpRad = perp * Math.PI / 180;
+      var lx = mx + 12 * Math.cos(perpRad);
+      var ly = my + 12 * Math.sin(perpRad);
+      parts.push(
+        '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '"' +
+        ' font-family="sans-serif" font-size="9" fill="#64748b"' +
+        ' text-anchor="middle" dominant-baseline="middle">' +
+        edge.road + ' · ' + edge.minutes + ' min</text>'
+      );
+    });
+
+    // ── Build a response-time map for zones ───────────────────────────────
+    var rtByZone = {};
+    var nearestByZone = {};
+    if (metrics && metrics.zoneResults) {
+      metrics.zoneResults.forEach(function(zr) {
+        rtByZone[zr.zoneId]      = zr.minResponseTime;
+        nearestByZone[zr.zoneId] = zr.nearestStageSiteId;
+      });
+    }
+
+    // ── Zone circles ─────────────────────────────────────────────────────
+    ZONE_ORDER.forEach(function(zoneId) {
+      var zone = zones[zoneId];
+      var rt   = rtByZone[zoneId] !== undefined ? rtByZone[zoneId] : null;
+      var r    = zone.type === 'town' ? 45 : 30;
+      var fill = rt !== null ? zoneColor(rt) : '#94a3b8';
+      var rtLabel = rt !== null ? rt.toFixed(1) + ' min' : '?';
+
+      // Zone circle
+      parts.push(
+        '<circle cx="' + zone.mapX + '" cy="' + zone.mapY + '" r="' + r + '"' +
+        ' fill="' + fill + '" stroke="#ffffff" stroke-width="2"/>'
+      );
+
+      // Response time text inside circle (white)
+      parts.push(
+        '<text x="' + zone.mapX + '" y="' + (zone.mapY - 5) + '"' +
+        ' font-family="sans-serif" font-size="11" font-weight="700"' +
+        ' fill="#ffffff" text-anchor="middle" dominant-baseline="middle">' +
+        rtLabel + '</text>'
+      );
+
+      // Zone label below circle
+      parts.push(
+        '<text x="' + zone.mapX + '" y="' + (zone.mapY + r + 14) + '"' +
+        ' font-family="sans-serif" font-size="10" font-weight="600"' +
+        ' fill="#1e293b" text-anchor="middle">' +
+        zone.label + '</text>'
+      );
+    });
+
+    // ── Hospital markers ──────────────────────────────────────────────────
+    Object.values(data.HOSPITALS).forEach(function(h) {
+      parts.push(
+        '<rect x="' + (h.x - 13) + '" y="' + (h.y - 13) + '" width="26" height="26"' +
+        ' fill="' + COLOR.hosp + '" stroke="#ffffff" stroke-width="1.5" rx="3"/>'
+      );
+      parts.push(
+        '<text x="' + h.x + '" y="' + h.y + '"' +
+        ' font-family="sans-serif" font-size="14" font-weight="900"' +
+        ' fill="#ffffff" text-anchor="middle" dominant-baseline="middle">H</text>'
+      );
+      parts.push(
+        '<text x="' + h.x + '" y="' + (h.y + 22) + '"' +
+        ' font-family="sans-serif" font-size="9" font-weight="600"' +
+        ' fill="' + COLOR.hosp + '" text-anchor="middle">' + h.shortLabel + '</text>'
+      );
+    });
+
+    // ── Ambulance staging markers ─────────────────────────────────────────
+    // Build a map: siteId → list of ambulance numbers staged there
+    var ambsBySite = {};
+    stagingConfig.forEach(function(siteId, idx) {
+      if (!ambsBySite[siteId]) ambsBySite[siteId] = [];
+      ambsBySite[siteId].push(idx + 1);
+    });
+
+    Object.keys(ambsBySite).forEach(function(siteId) {
+      var site    = data.STAGING_SITES[siteId];
+      var zone    = zones[site.zone];
+      var baseX   = zone.mapX + site.displayDx;
+      var baseY   = zone.mapY + site.displayDy;
+      var ambNums = ambsBySite[siteId];
+
+      // Blue "+" marker
+      parts.push(
+        '<text x="' + baseX + '" y="' + baseY + '"' +
+        ' font-family="sans-serif" font-size="20" font-weight="900"' +
+        ' fill="' + COLOR.blue + '" text-anchor="middle" dominant-baseline="middle">+</text>'
+      );
+
+      // Ambulance number label(s)
+      var label = ambNums.map(function(n) { return 'A' + n; }).join(',');
+      parts.push(
+        '<text x="' + baseX + '" y="' + (baseY + 16) + '"' +
+        ' font-family="sans-serif" font-size="9" font-weight="700"' +
+        ' fill="' + COLOR.blue + '" text-anchor="middle">' + label + '</text>'
+      );
+
+      // Small label for site name (truncated)
+      var shortName = site.label.replace('Big Stone Gap ', 'BSG ').replace(' Squad', ' Sq').replace(' Department', ' Dept').replace(' Station 1', ' Stn1');
+      parts.push(
+        '<text x="' + baseX + '" y="' + (baseY + 27) + '"' +
+        ' font-family="sans-serif" font-size="8"' +
+        ' fill="#475569" text-anchor="middle">' + shortName + '</text>'
+      );
+    });
+
+    // ── Legend (bottom-left) ──────────────────────────────────────────────
+    var lx = 20, ly = 390;
+    parts.push('<rect x="' + lx + '" y="' + ly + '" width="160" height="90" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="4"/>');
+    parts.push('<text x="' + (lx+8) + '" y="' + (ly+14) + '" font-family="sans-serif" font-size="9" font-weight="700" fill="#64748b" text-transform="uppercase">LEGEND</text>');
+
+    var legendItems = [
+      { color: COLOR.green, label: 'Under 8 min response' },
+      { color: COLOR.amber, label: '8–12 min response' },
+      { color: COLOR.red,   label: 'Over 12 min response' }
+    ];
+    legendItems.forEach(function(item, i) {
+      var iy = ly + 26 + i * 17;
+      parts.push('<circle cx="' + (lx+10) + '" cy="' + iy + '" r="5" fill="' + item.color + '"/>');
+      parts.push('<text x="' + (lx+20) + '" y="' + (iy+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">' + item.label + '</text>');
+    });
+
+    // Ambulance and hospital legend icons
+    var iy4 = ly + 26 + 3 * 17;
+    parts.push('<text x="' + (lx+9) + '" y="' + iy4 + '" font-family="sans-serif" font-size="12" font-weight="900" fill="' + COLOR.blue + '" text-anchor="middle" dominant-baseline="middle">+</text>');
+    parts.push('<text x="' + (lx+20) + '" y="' + (iy4+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">Ambulance staging</text>');
+
+    var iy5 = ly + 26 + 4 * 17;
+    parts.push('<rect x="' + (lx+4) + '" y="' + (iy5-6) + '" width="12" height="12" fill="' + COLOR.hosp + '" rx="1"/>');
+    parts.push('<text x="' + (lx+10) + '" y="' + iy5 + '" font-family="sans-serif" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">H</text>');
+    parts.push('<text x="' + (lx+20) + '" y="' + (iy5+1) + '" font-family="sans-serif" font-size="9" fill="#1e293b" dominant-baseline="middle">Hospital</text>');
+
+    return parts.join('\n');
+  } catch (e) {
+    console.error('buildSVGContent error:', e);
+    return '<text x="500" y="250" text-anchor="middle" fill="red">Map rendering error</text>';
+  }
+}
+
+// ─── SECTION 7: RENDER SVG MAP ────────────────────────────────────────────────
+
+function renderSVGMap(metrics, stagingConfig, params) {
+  emsMap.innerHTML = buildSVGContent(metrics, stagingConfig, params);
+}
+
+// ─── SECTION 8: RENDER RESPONSE TABLE ────────────────────────────────────────
+
+function renderResponseTable(metrics) {
+  if (!metrics) return;
+  var data = window.EMS.data;
+  var rows = '';
+  metrics.zoneResults.forEach(function(zr) {
+    var rt      = zr.minResponseTime;
+    var status  = rt <= 8 ? 'PASS' : (rt <= 12 ? 'WARNING' : 'FAIL');
+    var pillCls = rt <= 8 ? 'pass' : (rt <= 12 ? 'warning' : 'fail');
+    var station = zr.nearestStageSiteId ? data.STAGING_SITES[zr.nearestStageSiteId].label : '—';
+    rows +=
+      '<tr>' +
+        '<td><strong>' + zr.label + '</strong></td>' +
+        '<td>' + zr.population.toLocaleString() + '</td>' +
+        '<td style="font-size:0.82rem">' + station + '</td>' +
+        '<td><strong>' + rt.toFixed(1) + ' min</strong></td>' +
+        '<td><span class="status-pill ' + pillCls + '">' + status + '</span></td>' +
+      '</tr>';
+  });
+  responseTableBody.innerHTML = rows;
+}
+
+// ─── SECTION 9: RENDER OPTIMAL STAGING ───────────────────────────────────────
+
+function renderOptimalStaging(params) {
+  try {
+    var sim    = window.EMS.simulation;
+    var data   = window.EMS.data;
+    var result = sim.findOptimalStaging(
+      params.fleet, params.timePeriod, params.roadCondition, params.dayType, params.callsPerDay
+    );
+    if (!result) {
+      optimalStagingCard.innerHTML = '<p class="text-muted">Unable to compute optimal staging.</p>';
+      return;
+    }
+
+    var m            = result.metrics;
+    var satisfies    = m.worstCaseResponseTime <= 12;
+    var badgeClass   = satisfies ? 'satisfied' : 'violated';
+    var badgeText    = satisfies ? '12-min constraint SATISFIED' : '12-min constraint VIOLATED';
+    var cov8pct      = (m.weightedCoverage8 * 100).toFixed(1);
+    var cov12pct     = (m.weightedCoverage12 * 100).toFixed(1);
+    var worstStr     = m.worstCaseResponseTime.toFixed(1);
+
+    // Build staging list items
+    var siteLines = '';
+    result.stagingConfig.forEach(function(siteId, idx) {
+      siteLines += '<li>A' + (idx+1) + ': ' + data.STAGING_SITES[siteId].label + '</li>';
+    });
+
+    var html =
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+        '<strong style="font-size:1rem">Recommended deployment</strong>' +
+        '<span class="constraint-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      '</div>' +
+      '<ul class="optimal-staging-list">' + siteLines + '</ul>' +
+      '<div class="optimal-coverage-stat">' +
+        'Coverage &le;8 min: <strong>' + cov8pct + '%</strong> &nbsp;|&nbsp; ' +
+        'Coverage &le;12 min: <strong>' + cov12pct + '%</strong> &nbsp;|&nbsp; ' +
+        'Worst-case RT: <strong>' + worstStr + ' min</strong>' +
+      '</div>' +
+      '<p class="note-text" style="margin-top:6px">' +
+        'For ' + params.fleet + ' unit' + (params.fleet > 1 ? 's' : '') + ', ' +
+        data.TIME_PERIODS[params.timePeriod].label + ', ' +
+        data.ROAD_CONDITIONS[params.roadCondition].label + ' roads, ' +
+        params.callsPerDay + ' calls/day.' +
+      '</p>';
+
+    optimalStagingCard.innerHTML = html;
+  } catch (e) {
+    console.error('renderOptimalStaging error:', e);
+    optimalStagingCard.innerHTML = '<p class="text-muted">Error computing optimal staging.</p>';
+  }
+}
+
+// ─── SECTION 10: MAIN SIMULATION RENDER ──────────────────────────────────────
+
+function runSimulationAndRender() {
+  try {
+    var params   = getScenarioParams();
+    updateFleetDropdownVisibility(params.fleet);
+
+    var sim      = window.EMS.simulation;
+    var metrics  = sim.computeCoverageMetrics(params.staging, params.roadCondition, params.timePeriod);
+    var avail    = sim.computeAvailability(params.fleet, params.timePeriod, params.dayType, params.callsPerDay);
+
+    renderMetricCards(metrics, avail);
+    renderSVGMap(metrics, params.staging, params);
+    renderResponseTable(metrics);
+    renderOptimalStaging(params);
+  } catch (e) {
+    console.error('runSimulationAndRender error:', e);
+  }
+}
+
+// ─── SECTION 11: SENSITIVITY ANALYSIS RENDER ─────────────────────────────────
+
+function runSensitivityAndRender() {
+  try {
+    var params  = getScenarioParams();
+    var sim     = window.EMS.simulation;
+    var data    = window.EMS.data;
+    var paramKey = sensitivityParamSel.value;
+
+    var result = sim.runSensitivityAnalysis(
+      paramKey, params.fleet, params.timePeriod, params.roadCondition, params.dayType, params.callsPerDay
+    );
+    if (!result) return;
+
+    // Update heading
+    var paramLabels = {
+      fleetSize:      'Fleet Size',
+      roadConditions: 'Road Conditions',
+      callVolume:     'Call Volume',
+      timeOfDay:      'Time of Day'
+    };
+    sensitivityHeading.textContent = 'Sensitivity Analysis — ' + (paramLabels[paramKey] || paramKey);
+
+    // Destroy previous chart instance to prevent "canvas already in use" error
+    if (sensitivityChart) {
+      sensitivityChart.destroy();
+      sensitivityChart = null;
+    }
+
+    var ctx = sensitivityChartCanvas.getContext('2d');
+
+    sensitivityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: result.labels,
+        datasets: [
+          {
+            label: result.yLabel,
+            data:  result.coverage8Data,
+            backgroundColor: 'rgba(29, 111, 184, 0.75)',
+            borderColor:     'rgba(29, 111, 184, 1)',
+            borderWidth: 1,
+            yAxisID: 'y'
+          },
+          {
+            label: result.y1Label,
+            data:  result.worstCaseData,
+            type: 'line',
+            borderColor:     'rgba(220, 38, 38, 0.9)',
+            backgroundColor: 'rgba(220, 38, 38, 0.15)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: 'rgba(220, 38, 38, 0.9)',
+            yAxisID: 'y1',
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { font: { size: 11 } } },
+          tooltip: { bodyFont: { size: 11 }, titleFont: { size: 11 } }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            position: 'left',
+            min: 0,
+            max: 100,
+            title: { display: true, text: result.yLabel, font: { size: 10 } },
+            ticks: { font: { size: 10 } }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            min: 0,
+            title: { display: true, text: result.y1Label, font: { size: 10 } },
+            ticks: { font: { size: 10 } },
+            grid: { drawOnChartArea: false }
+          },
+          x: {
+            ticks: { font: { size: 10 } }
+          }
+        }
+      }
+    });
+
+    sensitivityInterpEl.textContent = result.interpretation;
+    sensitivityCard.classList.add('visible');
+  } catch (e) {
+    console.error('runSensitivityAndRender error:', e);
+  }
+}
+
+// ─── SECTION 12: EVENT LISTENERS ─────────────────────────────────────────────
+
+fleetSlider.addEventListener('input', function() {
+  fleetDisplay.textContent = fleetSlider.value;
+  runSimulationAndRender();
+});
+
+[amb1Select, amb2Select, amb3Select, amb4Select].forEach(function(sel) {
+  sel.addEventListener('change', runSimulationAndRender);
+});
+
+[timePeriodSelect, roadConditionSelect, callVolumeSelect, dayTypeSelect].forEach(function(sel) {
+  sel.addEventListener('change', runSimulationAndRender);
+});
+
+findOptimalBtn.addEventListener('click', function() {
+  try {
+    var params  = getScenarioParams();
+    var sim     = window.EMS.simulation;
+    var result  = sim.findOptimalStaging(
+      params.fleet, params.timePeriod, params.roadCondition, params.dayType, params.callsPerDay
+    );
+    if (!result) return;
+    var selects = [amb1Select, amb2Select, amb3Select, amb4Select];
+    result.stagingConfig.forEach(function(siteId, idx) {
+      if (idx < selects.length) selects[idx].value = siteId;
+    });
+    runSimulationAndRender();
+  } catch (e) {
+    console.error('findOptimalBtn click error:', e);
+  }
+});
+
+runSensitivityBtn.addEventListener('click', runSensitivityAndRender);
+
+// ─── SECTION 13: INITIALIZATION ──────────────────────────────────────────────
+
+(function init() {
+  // Set default values per spec
+  fleetSlider.value         = '2';
+  amb1Select.value          = 'norton_rescue';
+  amb2Select.value          = 'bsg_rescue';
+  timePeriodSelect.value    = 'morning';
+  roadConditionSelect.value = 'normal';
+  callVolumeSelect.value    = '24.5';
+  dayTypeSelect.value       = 'weekday';
+
+  // Show correct number of dropdowns and run initial simulation
+  updateFleetDropdownVisibility(2);
+  runSimulationAndRender();
+})();
+</script>
+
+</body>
+</html>
