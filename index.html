@@ -158,7 +158,36 @@
   ═══════════════════════════════════════════════════════ -->
   <main class="main-content">
 
-    <!-- Metric Cards -->
+    <!-- Map — first and dominant element (Fix 2) -->
+    <div id="map-container">
+      <div id="ems-leaflet-map"></div>
+
+      <!-- SVG fallback — shown only if Leaflet init fails -->
+      <div id="svg-fallback" style="display:none">
+        <p class="fallback-notice">Interactive map unavailable &mdash; showing schematic view</p>
+        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- Map legend overlay -->
+      <div id="map-legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-section-label">Zone colors (model results)</div>
+        <div class="legend-item"><span class="legend-dot green"></span>Under 8 min</div>
+        <div class="legend-item"><span class="legend-dot amber"></span>8&ndash;12 min</div>
+        <div class="legend-item"><span class="legend-dot red"></span>Over 12 min</div>
+        <div class="legend-item"><span style="font-size:16px;line-height:1;margin-right:4px">&#x1F691;</span> Ambulance</div>
+        <div class="legend-item"><div class="legend-hosp-icon">H</div> Hospital</div>
+        <div class="legend-section-label" style="margin-top:6px">Coverage rings (speed est.)</div>
+        <div class="legend-item"><div class="legend-ring green-ring"></div> ~8 min range</div>
+        <div class="legend-item"><div class="legend-ring amber-ring"></div> ~12 min range</div>
+        <p class="legend-note">Rings assume ~65 mph avg; actual terrain slower</p>
+        <div class="legend-reset">
+          <button class="legend-reset-btn" id="map-reset-btn">Reset view</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric Cards (below map — Fix 2) -->
     <div class="metric-row">
       <div class="metric-card" id="card-cov8">
         <span class="metric-value" id="val-cov8">&mdash;</span>
@@ -213,7 +242,7 @@
           </button>
           <button class="ai-mode-btn" data-mode="report_paragraph">
             <span class="ai-btn-icon">&#128221;</span>
-            <span class="ai-btn-label">Report Para</span>
+            <span class="ai-btn-label">Report Paragraph</span>
             <span class="ai-btn-desc">Write a competition-ready paragraph</span>
           </button>
           <button class="ai-mode-btn" data-mode="optimize">
@@ -227,35 +256,6 @@
             <span class="ai-placeholder-icon">&#128161;</span>
             <span>Select an analysis mode above &mdash; results appear here automatically after each simulation run.</span>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Map (Change 3 — legend updated with two sections) -->
-    <div id="map-container">
-      <div id="ems-leaflet-map"></div>
-
-      <!-- SVG fallback — shown only if Leaflet init fails -->
-      <div id="svg-fallback" style="display:none">
-        <p class="fallback-notice">Interactive map unavailable &mdash; showing schematic view</p>
-        <svg id="ems-map" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
-
-      <!-- Map legend overlay -->
-      <div id="map-legend">
-        <div class="legend-title">Legend</div>
-        <div class="legend-section-label">Zone colors (model results)</div>
-        <div class="legend-item"><div class="legend-dot green"></div> Under 8 min</div>
-        <div class="legend-item"><div class="legend-dot amber"></div> 8&ndash;12 min</div>
-        <div class="legend-item"><div class="legend-dot red"></div> Over 12 min</div>
-        <div class="legend-item"><div class="legend-amb-icon">+</div> Ambulance</div>
-        <div class="legend-item"><div class="legend-hosp-icon">H</div> Hospital</div>
-        <div class="legend-section-label" style="margin-top:6px">Coverage rings (speed est.)</div>
-        <div class="legend-item"><div class="legend-ring green-ring"></div> ~8 min range</div>
-        <div class="legend-item"><div class="legend-ring amber-ring"></div> ~12 min range</div>
-        <p class="legend-note">Rings assume ~65 mph avg; actual terrain slower</p>
-        <div class="legend-reset">
-          <button class="legend-reset-btn" id="map-reset-btn">Reset view</button>
         </div>
       </div>
     </div>
@@ -299,35 +299,6 @@
       </div>
       <div class="optimal-staging-card" id="optimal-staging-card">
         <!-- Populated by inline script -->
-      </div>
-    </div>
-
-    <!-- Optimal Staging Info Modal (Change 4) -->
-    <div id="optimal-info-overlay" class="modal-overlay" onclick="if(event.target===this)closeOptimalModal()">
-      <div class="modal-card">
-        <div class="modal-header">
-          <span>How Optimal Staging Works</span>
-          <button class="modal-close-btn" onclick="closeOptimalModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p class="modal-intro">The optimizer evaluates every possible way to assign ambulances to staging sites and picks the configuration that best serves Wise County.</p>
-          <div class="modal-step">
-            <div class="modal-step-number">1</div>
-            <div class="modal-step-content"><strong>Generate combinations</strong> &mdash; tries all combinations with replacement from 6 staging sites for your fleet size. Multiple ambulances can share a station.</div>
-          </div>
-          <div class="modal-step">
-            <div class="modal-step-number">2</div>
-            <div class="modal-step-content"><strong>Score each configuration</strong> &mdash; runs the coverage model for each combination, measuring population-weighted 8-min coverage and worst-case response time across all 5 zones.</div>
-          </div>
-          <div class="modal-step">
-            <div class="modal-step-number">3</div>
-            <div class="modal-step-content"><strong>Select the best</strong> &mdash; picks the configuration that satisfies the 12-minute constraint while maximizing 8-minute population coverage.</div>
-          </div>
-          <div class="modal-stats" id="modal-combo-stats">
-            <!-- Populated by openOptimalModal() -->
-          </div>
-          <p class="modal-footnote">Run times are near-instant &mdash; the coverage model is O(zones &times; ambulances) per configuration.</p>
-        </div>
       </div>
     </div>
 
@@ -599,6 +570,16 @@ function renderOptimalStaging(params) {
     var cov12pct   = (m.weightedCoverage12 * 100).toFixed(1);
     var worstStr   = m.worstCaseResponseTime.toFixed(1);
 
+    // 8-min coverage badge (Fix 4)
+    var badge8Text, badge8Cls;
+    if (m.weightedCoverage8 >= 0.9) {
+      badge8Text = '8-MIN TARGET MET (' + cov8pct + '%)';
+      badge8Cls  = 'coverage-badge target-met';
+    } else {
+      badge8Text = '8-MIN COVERAGE: ' + cov8pct + '%';
+      badge8Cls  = 'coverage-badge target-partial';
+    }
+
     var siteLines = '';
     result.stagingConfig.forEach(function(siteId, idx) {
       siteLines += '<li>A' + (idx + 1) + ': ' + data.STAGING_SITES[siteId].label + '</li>';
@@ -607,8 +588,15 @@ function renderOptimalStaging(params) {
     optimalStagingCard.innerHTML =
       '<div class="optimal-staging-header">' +
         '<strong style="font-size:0.85rem">Recommended deployment</strong>' +
-        '<span class="constraint-badge ' + badgeCls + '">' + badgeText + '</span>' +
       '</div>' +
+      '<div class="constraint-badges">' +
+        '<span class="constraint-badge ' + badgeCls + '">' + badgeText + '</span>' +
+        '<span class="' + badge8Cls + '">' + badge8Text + '</span>' +
+      '</div>' +
+      '<p class="constraint-note">' +
+        '12-min constraint = hard requirement (no zone may exceed 12 min). ' +
+        '8-min target = performance goal (NFPA 1710 recommends 90% of incidents reached within 8 min).' +
+      '</p>' +
       '<ul class="optimal-staging-list">' + siteLines + '</ul>' +
       '<div class="optimal-coverage-stat">' +
         'Coverage &le;8 min: <strong>' + cov8pct + '%</strong> &nbsp;&middot;&nbsp; ' +
@@ -1038,20 +1026,19 @@ function simulateIncidentResponse() {
   var incLng = loc.lng + (Math.random() - 0.5) * 0.004;
   var incLatLng = L.latLng(incLat, incLng);
 
-  var typeMap = {
-    medical:  { icon: '\uD83D\uDE91', label: 'Medical Emergency' },
-    accident: { icon: '\uD83D\uDE97', label: 'Vehicle Accident'  },
-    fire:     { icon: '\uD83D\uDD25', label: 'Structure Fire'    }
-  };
-  var typeInfo = typeMap[loc.type] || typeMap.medical;
+  var INCIDENT_ICONS  = { medical: '\uD83E\uDE7A', accident: '\uD83D\uDE97', fire: '\uD83D\uDD25' };
+  var INCIDENT_LABELS = { medical: 'Medical Emergency', accident: 'Vehicle Accident', fire: 'Structure Fire' };
+  var incidentIcon    = INCIDENT_ICONS[loc.type]  || '\uD83E\uDE7A';
+  var incidentLabel   = INCIDENT_LABELS[loc.type] || 'Medical Emergency';
+  // responseMinutes: fallback from distance; overridden by ORS in doAnimate
+  var responseMinutes = nearestDist / 1000 / 65 * 60;
 
-  // Place incident marker
+  // Place incident marker (icon only — no text label, 48px circle)
   var incIcon = L.divIcon({
-    html: '<div class="incident-marker"><div class="incident-icon">' + typeInfo.icon + '</div>' +
-          '<div class="incident-label">' + typeInfo.label + '</div></div>',
+    html: '<div class="incident-marker"><div class="incident-icon">' + incidentIcon + '</div></div>',
     className: '',
-    iconSize:   [90, 44],
-    iconAnchor: [45, 22]
+    iconSize:   [48, 48],
+    iconAnchor: [24, 24]
   });
   APP.incidentMarker = L.marker(incLatLng, { icon: incIcon, zIndexOffset: 3000 }).addTo(APP.map);
 
@@ -1097,7 +1084,8 @@ function simulateIncidentResponse() {
       // ORS returns [lng, lat] — convert to [lat, lng] for Leaflet
       pathLatLngs = routeResult.coordinates.map(function(c) { return L.latLng(c[1], c[0]); });
       if (routeResult.durationMinutes > 0) {
-        animDuration = Math.min(Math.max(routeResult.durationMinutes * 400, 1500), 8000);
+        animDuration    = Math.min(Math.max(routeResult.durationMinutes * 400, 1500), 8000);
+        responseMinutes = routeResult.durationMinutes; // use real ORS travel time
       }
     } else {
       pathLatLngs = [L.latLng(ambLat, ambLng), incLatLng];
@@ -1108,12 +1096,12 @@ function simulateIncidentResponse() {
       color: '#ef4444', weight: 4, dashArray: '8 4', opacity: 0.85
     }).addTo(APP.map);
 
-    // Moving ambulance marker
+    // Moving ambulance marker — 🚑 emoji
     var movingIcon = L.divIcon({
-      html: '<div class="moving-ambulance-marker"><div class="amb-cross">+</div></div>',
+      html: '<div class="moving-ambulance-marker">\uD83D\uDE91</div>',
       className: '',
-      iconSize:   [22, 22],
-      iconAnchor: [11, 11]
+      iconSize:   [28, 28],
+      iconAnchor: [14, 14]
     });
     APP.animMarker = L.marker(pathLatLngs[0], { icon: movingIcon, zIndexOffset: 2500 }).addTo(APP.map);
 
@@ -1159,26 +1147,29 @@ function simulateIncidentResponse() {
     if (APP.shockwaveCircle)  { APP.shockwaveCircle.remove();  APP.shockwaveCircle  = null; }
     if (APP.animMarker)       { APP.animMarker.remove();       APP.animMarker       = null; }
 
+    var popupHtml =
+      '<div class="incident-popup">' +
+      '<strong>' + incidentIcon + ' Incident resolved</strong><br>' +
+      '<span class="popup-location">' + loc.name + '</span><br>' +
+      '<span class="popup-time">\u23F1 Response time: <strong>' +
+        responseMinutes.toFixed(1) + ' min</strong></span><br>' +
+      '<span class="popup-unit">Unit: A' + (nearestIdx + 1) +
+        ' dispatched from ' + (ambSiteId || '').replace(/_/g, ' ') + '</span>' +
+      '</div>';
+    // Remove stale marker and create a fresh resolved marker (avoids stale element refs)
     if (APP.incidentMarker) {
-      var stationName = ambSiteId && window.EMS.data.STAGING_SITES[ambSiteId]
-        ? window.EMS.data.STAGING_SITES[ambSiteId].label
-        : ('Unit ' + (nearestIdx + 1));
-      var resolvedIcon = L.divIcon({
-        html: '<div class="incident-marker resolved"><div class="incident-icon">\u2713</div>' +
-              '<div class="incident-label">Resolved</div></div>',
-        className: '',
-        iconSize:   [90, 44],
-        iconAnchor: [45, 22]
-      });
-      APP.incidentMarker.setIcon(resolvedIcon);
-      APP.incidentMarker
-        .bindPopup(
-          '<strong>\u2713 ' + typeInfo.label + ' Resolved</strong><br>' +
-          'Station: ' + stationName + '<br>' +
-          'Unit A' + (nearestIdx + 1)
-        )
-        .openPopup();
+      APP.map.removeLayer(APP.incidentMarker);
+      APP.incidentMarker = null;
     }
+    APP.incidentMarker = L.marker(incLatLng, {
+      icon: L.divIcon({
+        html: '<div class="incident-marker resolved"><div class="incident-icon">\u2713</div></div>',
+        className: '',
+        iconSize:   [48, 48],
+        iconAnchor: [24, 24]
+      })
+    }).addTo(APP.map);
+    APP.incidentMarker.bindPopup(popupHtml).openPopup();
 
     APP.incidentCleanupTimeout = setTimeout(function() {
       APP.incidentCleanupTimeout = null;
@@ -1233,6 +1224,23 @@ function buildAnalysisPayload() {
   };
 }
 
+// ─── MARKDOWN → HTML CONVERTER (Fix 3A) ───────────────────────────────────────
+function markdownToHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h4 style="margin:12px 0 4px;color:var(--color-text-primary);font-size:0.88rem;font-weight:600;">$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3 style="margin:14px 0 6px;color:var(--color-text-primary);font-size:0.95rem;font-weight:600;">$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^- (.+)$/gm, '<li style="margin:3px 0;padding-left:4px;">$1</li>')
+    .replace(/(<li[^<]*<\/li>\n?)+/g, '<ul style="margin:6px 0;padding-left:16px;">$&</ul>')
+    .replace(/\u2705/g, '<span style="color:var(--color-green)">\u2705</span>')
+    .replace(/\u26A0\uFE0F/g, '<span style="color:var(--color-amber)">\u26A0\uFE0F</span>')
+    .replace(/\n\n/g, '</div><div style="margin:8px 0">')
+    .replace(/\n/g, '<br>');
+}
+
 function triggerAI(mode) {
   try {
     if (!window.EMS || !window.EMS.api || !APP.lastMetrics) return;
@@ -1253,15 +1261,25 @@ function triggerAI(mode) {
       '</div>';
 
     window.EMS.api.analyze(mode, buildAnalysisPayload()).then(function(text) {
-      var escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
       responseArea.innerHTML =
         '<div class="ai-response-content">' +
-          '<div class="ai-response-text">' + escaped + '</div>' +
-          '<button class="ai-copy-btn" onclick="(function(btn){' +
-            'var t=btn.parentNode.querySelector(\'.ai-response-text\').innerText;' +
-            'if(navigator.clipboard)navigator.clipboard.writeText(t);' +
-          '})(this)">Copy</button>' +
+        '<div class="ai-response-text"><div style="margin:0">' +
+        markdownToHtml(text) +
+        '</div></div>' +
+        '<button class="ai-copy-btn" id="ai-copy-btn">Copy</button>' +
         '</div>';
+      var copyBtn = responseArea.querySelector('#ai-copy-btn');
+      if (copyBtn) {
+        var textEl = responseArea.querySelector('.ai-response-text');
+        var textToCopy = textEl ? textEl.innerText : text;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          copyBtn.onclick = function() {
+            navigator.clipboard.writeText(textToCopy).catch(function() {});
+          };
+        } else {
+          copyBtn.style.display = 'none';
+        }
+      }
     }).catch(function() {
       responseArea.innerHTML = '<div class="ai-error-msg">AI analysis unavailable. Check backend connection.</div>';
     });
@@ -1406,24 +1424,19 @@ function runSimulationAndRender() {
     } else {
       renderSVGMap(metrics, params.staging, params);
     }
+
+    // AI auto-trigger — direct call (Fix 7A)
+    try {
+      var aiPanel = document.getElementById('ai-panel');
+      if (aiPanel && aiPanel.style.display !== 'none' &&
+          typeof triggerAI === 'function' && APP.lastMetrics) {
+        setTimeout(function() { triggerAI('interpret'); }, 150);
+      }
+    } catch(e) {}
   } catch (e) {
     console.error('runSimulationAndRender error:', e);
   }
 }
-
-// ─── MONKEY-PATCH: AI AUTO-TRIGGER (Change 2) ─────────────────────────────────
-// Wraps runSimulationAndRender after it is defined; triggers triggerAI('interpret')
-// 100ms after each run (ensures APP.lastMetrics is populated).
-var _originalRun = runSimulationAndRender;
-runSimulationAndRender = function() {
-  _originalRun.apply(this, arguments);
-  try {
-    var panel = document.getElementById('ai-panel');
-    if (panel && panel.style.display !== 'none' && typeof triggerAI === 'function') {
-      setTimeout(function() { triggerAI('interpret'); }, 100);
-    }
-  } catch(e) {}
-};
 
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
 fleetSlider.addEventListener('input', function() {
@@ -1498,6 +1511,35 @@ document.addEventListener('DOMContentLoaded', function() {
   initAIPanel();
 });
 </script>
+
+<!-- Optimal Staging Info Modal — direct body child, position:fixed (Fix 3B) -->
+<div id="optimal-info-overlay" class="modal-overlay" onclick="if(event.target===this)closeOptimalModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span>How Optimal Staging Works</span>
+      <button class="modal-close-btn" onclick="closeOptimalModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-intro">The optimizer evaluates every possible way to assign ambulances to staging sites and picks the configuration that best serves Wise County.</p>
+      <div class="modal-step">
+        <div class="modal-step-number">1</div>
+        <div class="modal-step-content"><strong>Generate combinations</strong> &mdash; tries all combinations with replacement from 6 staging sites for your fleet size. Multiple ambulances can share a station.</div>
+      </div>
+      <div class="modal-step">
+        <div class="modal-step-number">2</div>
+        <div class="modal-step-content"><strong>Score each configuration</strong> &mdash; runs the coverage model for each combination, measuring population-weighted 8-min coverage and worst-case response time across all 5 zones.</div>
+      </div>
+      <div class="modal-step">
+        <div class="modal-step-number">3</div>
+        <div class="modal-step-content"><strong>Select the best</strong> &mdash; picks the configuration that satisfies the 12-minute constraint while maximizing 8-minute population coverage.</div>
+      </div>
+      <div class="modal-stats" id="modal-combo-stats">
+        <!-- Populated by openOptimalModal() -->
+      </div>
+      <p class="modal-footnote">Run times are near-instant &mdash; the coverage model is O(zones &times; ambulances) per configuration.</p>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
